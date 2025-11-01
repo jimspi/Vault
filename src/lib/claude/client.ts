@@ -1,11 +1,11 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
 });
 
 export interface ClaudeMessage {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
@@ -17,23 +17,37 @@ export async function generateCompletion(
     system?: string;
   }
 ): Promise<string> {
-  const response = await client.messages.create({
-    model: 'claude-3-5-sonnet-20241022',
-    max_tokens: options?.maxTokens || 4096,
-    temperature: options?.temperature || 0.7,
-    system: options?.system,
-    messages: messages.map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    })),
-  });
+  const formattedMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-  const content = response.content[0];
-  if (content.type === 'text') {
-    return content.text;
+  // Add system message if provided
+  if (options?.system) {
+    formattedMessages.push({
+      role: 'system',
+      content: options.system,
+    });
   }
 
-  throw new Error('Unexpected response type from Claude');
+  // Add other messages
+  formattedMessages.push(
+    ...messages.map((msg) => ({
+      role: msg.role as 'user' | 'assistant' | 'system',
+      content: msg.content,
+    }))
+  );
+
+  const response = await client.chat.completions.create({
+    model: 'gpt-4-turbo-preview',
+    messages: formattedMessages,
+    max_tokens: options?.maxTokens || 4096,
+    temperature: options?.temperature || 0.7,
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error('No response from OpenAI');
+  }
+
+  return content;
 }
 
 export async function extractKeyInformation(content: string): Promise<{
@@ -75,12 +89,12 @@ Be concise but comprehensive. Focus on actionable and memorable information.`;
   );
 
   try {
-    // Extract JSON from response (Claude might wrap it in markdown code blocks)
+    // Extract JSON from response (might be wrapped in markdown code blocks)
     const jsonMatch = response.match(/```json\n?([\s\S]*?)\n?```/) || response.match(/\{[\s\S]*\}/);
     const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : response;
     return JSON.parse(jsonStr);
   } catch (error) {
-    console.error('Failed to parse Claude response:', error);
+    console.error('Failed to parse AI response:', error);
     // Return default structure
     return {
       memories: [],
