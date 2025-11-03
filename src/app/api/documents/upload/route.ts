@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/auth/session';
 import { extractContent, isSupportedFileType, sanitizeFilename } from '@/lib/processing/documents';
-import { generateEmbedding, chunkText } from '@/lib/embeddings';
-import { extractKeyInformation } from '@/lib/claude/client';
+import { generateEmbedding } from '@/lib/embeddings';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -105,136 +104,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process document asynchronously
-    processDocumentAsync(document.id, fileBuffer, file.type, workspaceId);
+    // Process document synchronously
+    try {
+      // Extract text content
+      const { text, metadata } = await extractContent(fileBuffer, file.type);
 
-    return NextResponse.json({
-      documentId: document.id,
-      status: 'processing',
-      message: 'Document upload successful. Processing in background.',
-    });
+      if (!text || text.trim().length === 0) {
+        throw new Error('No text content extracted from document');
+      }
+
+      // Update document with extracted content and mark as ready
+      await supabase
+        .from('documents')
+        .update({
+          content: text.slice(0, 50000), // Limit content size to avoid DB issues
+          metadata: metadata as any,
+          status: 'ready',
+          processed_at: new Date().toISOString(),
+        })
+        .eq('id', document.id);
+
+      // Generate embedding for first chunk asynchronously (don't wait)
+      const firstChunk = text.slice(0, 1000);
+      generateEmbedding(firstChunk)
+        .then((embedding) => {
+          return supabase.from('chunks').insert({
+            document_id: document.id,
+            content: firstChunk,
+            embedding: embedding as any,
+            position: 0,
+          });
+        })
+        .catch((err) => {
+          console.error('Background embedding error:', err);
+        });
+
+      return NextResponse.json({
+        documentId: document.id,
+        status: 'ready',
+        message: 'Document uploaded and processed successfully',
+      });
+    } catch (processingError) {
+      console.error(`Error processing document ${document.id}:`, processingError);
+
+      // Mark document as failed
+      await supabase
+        .from('documents')
+        .update({
+          status: 'failed',
+          metadata: { error: String(processingError) } as any,
+        })
+        .eq('id', document.id);
+
+      return NextResponse.json({
+        documentId: document.id,
+        status: 'failed',
+        message: 'Document uploaded but processing failed',
+        error: processingError instanceof Error ? processingError.message : 'Processing error',
+      }, { status: 500 });
+    }
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
-  }
-}
-
-async function processDocumentAsync(
-  documentId: string,
-  fileBuffer: Buffer,
-  mimeType: string,
-  workspaceId: string
-) {
-  const supabase = createClient();
-
-  try {
-    // Extract text content
-    const { text, metadata } = await extractContent(fileBuffer, mimeType);
-
-    // Update document with extracted content
-    await supabase
-      .from('documents')
-      .update({
-        content: text,
-        metadata: metadata as any,
-      })
-      .eq('id', documentId);
-
-    // Generate chunks
-    const chunks = chunkText(text, { chunkSize: 512, overlap: 50 });
-
-    // Generate embeddings and store chunks
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const embedding = await generateEmbedding(chunk);
-
-      await supabase.from('chunks').insert({
-        document_id: documentId,
-        content: chunk,
-        embedding: embedding as any,
-        position: i,
-      });
-    }
-
-    // Extract key information using Claude
-    const aiExtraction = await extractKeyInformation(text);
-
-    // Create tags
-    for (const tagName of aiExtraction.tags) {
-      // Find or create tag
-      const { data: existingTag } = await supabase
-        .from('tags')
-        .select('id')
-        .eq('workspace_id', workspaceId)
-        .eq('name', tagName)
-        .single();
-
-      let tagId = existingTag?.id;
-
-      if (!tagId) {
-        const { data: newTag } = await supabase
-          .from('tags')
-          .insert({
-            workspace_id: workspaceId,
-            name: tagName,
-            auto_generated: true,
-          })
-          .select('id')
-          .single();
-
-        tagId = newTag?.id;
-      }
-
-      if (tagId) {
-        await supabase.from('document_tags').insert({
-          document_id: documentId,
-          tag_id: tagId,
-        });
-      }
-    }
-
-    // Store memories
-    for (const memory of aiExtraction.memories) {
-      const memoryEmbedding = await generateEmbedding(memory.content);
-
-      await supabase.from('memories').insert({
-        workspace_id: workspaceId,
-        content: memory.content,
-        embedding: memoryEmbedding as any,
-        confidence: memory.confidence,
-        sources: [{ documentId, type: 'extraction' }],
-        metadata: memory.metadata as any,
-      });
-    }
-
-    // Mark document as ready
-    await supabase
-      .from('documents')
-      .update({
-        status: 'ready',
-        processed_at: new Date().toISOString(),
-      })
-      .eq('id', documentId);
-
-    // Update workspace stats
-    await supabase.rpc('update_workspace_stats', {
-      workspace_uuid: workspaceId,
-    });
-
-    console.log(`Document ${documentId} processed successfully`);
-  } catch (error) {
-    console.error(`Error processing document ${documentId}:`, error);
-
-    // Mark document as failed
-    await supabase
-      .from('documents')
-      .update({
-        status: 'failed',
-        metadata: { error: String(error) } as any,
-      })
-      .eq('id', documentId);
   }
 }
