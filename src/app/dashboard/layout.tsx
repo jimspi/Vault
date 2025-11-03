@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { requireProfile } from '@/lib/auth/session';
 import { createClient } from '@/lib/supabase/server';
 import DashboardNav from '@/components/dashboard/DashboardNav';
