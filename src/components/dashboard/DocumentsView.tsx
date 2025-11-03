@@ -14,7 +14,7 @@ interface DocumentsViewProps {
   initialDocuments: Document[];
 }
 
-export default function DocumentsView({ workspaceId, initialDocuments }: DocumentsViewProps) {
+export default function DocumentsView({ workspaceId: _workspaceId, initialDocuments }: DocumentsViewProps) {
   const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();

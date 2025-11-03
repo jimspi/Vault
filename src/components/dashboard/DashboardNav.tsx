@@ -13,7 +13,7 @@ interface DashboardNavProps {
   workspaces: Workspace[];
 }
 
-export default function DashboardNav({ profile }: DashboardNavProps) {
+export default function DashboardNav({ profile, workspaces: _workspaces }: DashboardNavProps) {
   const pathname = usePathname();
 
   const navItems = [

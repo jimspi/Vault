@@ -19,7 +19,7 @@ const insightIcons = {
   trend: Sparkles,
 };
 
-export default function InsightsFeed({ initialInsights }: InsightsFeedProps) {
+export default function InsightsFeed({ workspaceId: _workspaceId, initialInsights }: InsightsFeedProps) {
   if (initialInsights.length === 0) {
     return (
       <Card>
