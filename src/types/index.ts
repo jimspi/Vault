@@ -1,4 +1,4 @@
-import { Database, InsightType, DocumentStatus, InsightStatus, RelationshipType } from './database';
+import { Database, InsightType, RelationshipType } from './database';
 
 // Helper types
 export type Tables<T extends keyof Database['public']['Tables']> =
