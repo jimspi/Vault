@@ -35,15 +35,10 @@ export default function HomePage() {
               Store, analyze, and surface insights from all your content. Vault uses advanced AI
               to help you remember everything, understand patterns, and discover connections.
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center">
               <Link href="/signup">
                 <Button size="lg">
                   Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/demo">
-                <Button size="lg" variant="outline">
-                  View Demo
                 </Button>
               </Link>
             </div>
