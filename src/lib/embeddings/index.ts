@@ -1,43 +1,45 @@
-import { pipeline, Pipeline } from '@xenova/transformers';
+import OpenAI from 'openai';
 
-let embeddingPipeline: Pipeline | null = null;
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+});
 
-export async function initEmbeddingModel(): Promise<Pipeline> {
-  if (!embeddingPipeline) {
-    embeddingPipeline = await pipeline(
-      'feature-extraction',
-      'Xenova/all-MiniLM-L6-v2'
-    );
-  }
-  return embeddingPipeline;
-}
-
+/**
+ * Generate embedding using OpenAI's text-embedding-3-small model
+ * Configured to output 768 dimensions to match our database schema
+ */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const model = await initEmbeddingModel();
+  // Truncate text to avoid token limits (8191 tokens max)
+  const truncatedText = text.slice(0, 8000);
 
-  // Truncate text to avoid memory issues
-  const truncatedText = text.slice(0, 512);
-
-  const output = await model(truncatedText, {
-    pooling: 'mean',
-    normalize: true,
+  const response = await client.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: truncatedText,
+    dimensions: 768, // Match our database vector(768) schema
   });
 
-  // Convert tensor to array
-  return Array.from(output.data) as number[];
+  return response.data[0].embedding;
 }
 
+/**
+ * Generate embeddings for multiple texts in batch
+ */
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  const embeddings: number[][] = [];
+  // OpenAI supports batch embeddings
+  const truncatedTexts = texts.map(text => text.slice(0, 8000));
 
-  for (const text of texts) {
-    const embedding = await generateEmbedding(text);
-    embeddings.push(embedding);
-  }
+  const response = await client.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: truncatedTexts,
+    dimensions: 768,
+  });
 
-  return embeddings;
+  return response.data.map(item => item.embedding);
 }
 
+/**
+ * Calculate cosine similarity between two vectors
+ */
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) {
     throw new Error('Vectors must have the same length');
@@ -56,6 +58,9 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+/**
+ * Split text into chunks with overlap
+ */
 export function chunkText(
   text: string,
   options: {
