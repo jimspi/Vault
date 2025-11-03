@@ -53,7 +53,7 @@ export default function UploadZone({ workspaceId }: UploadZoneProps) {
             throw new Error('Upload failed');
           }
 
-          const data = await response.json();
+          await response.json();
 
           setUploadingFiles((prev) =>
             prev.map((f) =>
