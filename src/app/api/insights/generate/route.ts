@@ -1,0 +1,227 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/lib/auth/session';
+import { generateCompletion } from '@/lib/claude/client';
+import { z } from 'zod';
+
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
+const generateInsightsSchema = z.object({
+  workspaceId: z.string().uuid(),
+});
+
+// Daily limit per workspace
+const DAILY_GENERATION_LIMIT = 5;
+
+interface GenerationMetadata {
+  lastGeneratedDate?: string;
+  generationsToday?: number;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const validatedData = generateInsightsSchema.parse(body);
+
+    const supabase = createClient();
+
+    // Get workspace
+    const { data: workspace } = await supabase
+      .from('workspaces')
+      .select('*')
+      .eq('id', validatedData.workspaceId)
+      .eq('owner_id', user.id)
+      .single();
+
+    if (!workspace) {
+      return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
+    }
+
+    // Check daily rate limit
+    const metadata = (workspace.settings as GenerationMetadata) || {};
+    const today = new Date().toISOString().split('T')[0];
+    const lastGeneratedDate = metadata.lastGeneratedDate;
+    const generationsToday = lastGeneratedDate === today ? (metadata.generationsToday || 0) : 0;
+
+    if (generationsToday >= DAILY_GENERATION_LIMIT) {
+      return NextResponse.json(
+        {
+          error: 'Daily limit reached',
+          message: `You've reached the daily limit of ${DAILY_GENERATION_LIMIT} AI insight generations. Try again tomorrow or create manual insights.`,
+          limit: DAILY_GENERATION_LIMIT,
+          used: generationsToday,
+        },
+        { status: 429 }
+      );
+    }
+
+    // Get recent documents with content
+    const { data: documents } = await supabase
+      .from('documents')
+      .select('id, title, content, upload_date, metadata')
+      .eq('workspace_id', validatedData.workspaceId)
+      .eq('status', 'ready')
+      .not('content', 'is', null)
+      .order('upload_date', { ascending: false })
+      .limit(20);
+
+    if (!documents || documents.length === 0) {
+      return NextResponse.json(
+        { error: 'No documents available', message: 'Upload documents first to generate insights' },
+        { status: 400 }
+      );
+    }
+
+    // Get existing insights to avoid duplicates
+    const { data: existingInsights } = await supabase
+      .from('insights')
+      .select('title, content')
+      .eq('workspace_id', validatedData.workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    // Prepare context for AI
+    const documentSummaries = documents.map((doc) => ({
+      title: doc.title,
+      preview: doc.content?.slice(0, 500),
+      uploadDate: doc.upload_date,
+    }));
+
+    // Generate insights using AI
+    const prompt = `You are an expert analyst helping users discover valuable insights from their documents.
+
+Documents in workspace (${documents.length} total):
+${documentSummaries.map((doc, i) => `${i + 1}. "${doc.title}" (${new Date(doc.uploadDate).toLocaleDateString()})\n   Preview: ${doc.preview}...`).join('\n\n')}
+
+${existingInsights && existingInsights.length > 0 ? `\nExisting insights to avoid duplicating:\n${existingInsights.map((i) => `- ${i.title}`).join('\n')}` : ''}
+
+Generate 2-3 HIGH-VALUE insights that would genuinely help the user. Focus on:
+1. **Patterns**: Recurring themes, contradictions between documents, emerging trends
+2. **Actionable Suggestions**: Specific recommendations based on the content
+3. **Connections**: Non-obvious relationships between different documents
+4. **Knowledge Gaps**: Important topics that are missing or need more coverage
+
+IMPORTANT:
+- Be SPECIFIC and reference actual document titles
+- Avoid generic advice like "consider organizing your documents"
+- Focus on insights the user couldn't easily see themselves
+- Each insight should provide real value
+
+Respond with a JSON array of insights in this exact format:
+[
+  {
+    "type": "pattern" | "contradiction" | "suggestion" | "reminder" | "trend",
+    "title": "Concise, specific title (max 100 chars)",
+    "content": "Detailed explanation with specific references to documents (200-500 chars)",
+    "priority": 1-100 (higher = more important),
+    "relatedDocumentTitles": ["doc title 1", "doc title 2"]
+  }
+]`;
+
+    const aiResponse = await generateCompletion(
+      [{ role: 'user', content: prompt }],
+      {
+        maxTokens: 2000,
+        temperature: 0.7,
+        system: 'You are a helpful AI assistant that generates valuable, specific insights from documents. Always respond with valid JSON only.',
+      }
+    );
+
+    // Parse AI response
+    let generatedInsights;
+    try {
+      // Extract JSON from response (handle markdown code blocks)
+      const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error('No JSON found in response');
+      }
+      generatedInsights = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', aiResponse);
+      return NextResponse.json(
+        { error: 'Failed to generate insights', message: 'AI response parsing failed' },
+        { status: 500 }
+      );
+    }
+
+    // Create document title to ID mapping
+    const titleToId = new Map(documents.map((doc) => [doc.title, doc.id]));
+
+    // Insert insights into database
+    const insightsToInsert = generatedInsights.map((insight: any) => {
+      // Map document titles to IDs
+      const relatedDocIds = (insight.relatedDocumentTitles || [])
+        .map((title: string) => titleToId.get(title))
+        .filter(Boolean);
+
+      return {
+        workspace_id: validatedData.workspaceId,
+        type: insight.type,
+        title: insight.title.slice(0, 200),
+        content: insight.content.slice(0, 2000),
+        priority: Math.min(100, Math.max(1, insight.priority || 50)),
+        status: 'new',
+        metadata: {
+          source: 'ai_generated',
+          generated_at: new Date().toISOString(),
+          model: 'gpt-4',
+        },
+        related_documents: relatedDocIds.length > 0 ? relatedDocIds : [],
+      };
+    });
+
+    const { data: createdInsights, error: insertError } = await supabase
+      .from('insights')
+      .insert(insightsToInsert)
+      .select();
+
+    if (insertError) {
+      console.error('Error inserting insights:', insertError);
+      return NextResponse.json(
+        { error: 'Failed to save insights' },
+        { status: 500 }
+      );
+    }
+
+    // Update workspace generation count
+    const newMetadata = {
+      ...workspace.settings,
+      lastGeneratedDate: today,
+      generationsToday: generationsToday + 1,
+    };
+
+    await supabase
+      .from('workspaces')
+      .update({ settings: newMetadata })
+      .eq('id', validatedData.workspaceId);
+
+    return NextResponse.json({
+      insights: createdInsights,
+      limit: {
+        daily: DAILY_GENERATION_LIMIT,
+        used: generationsToday + 1,
+        remaining: DAILY_GENERATION_LIMIT - (generationsToday + 1),
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    console.error('Generate insights error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
