@@ -127,6 +127,11 @@ export interface Database {
           position: number;
           metadata?: Json;
         };
+        Update: {
+          content?: string;
+          embedding?: number[] | null;
+          metadata?: Json;
+        };
       };
       memories: {
         Row: {
@@ -150,6 +155,16 @@ export interface Database {
           confidence?: number;
           sources?: Json;
           metadata?: Json;
+        };
+        Update: {
+          content?: string;
+          embedding?: number[] | null;
+          confidence?: number;
+          sources?: Json;
+          metadata?: Json;
+          last_accessed?: string;
+          access_count?: number;
+          relevance_score?: number;
         };
       };
       relationships: {
@@ -176,6 +191,11 @@ export interface Database {
           strength?: number;
           metadata?: Json;
         };
+        Update: {
+          relationship_type?: RelationshipType;
+          strength?: number;
+          metadata?: Json;
+        };
       };
       tags: {
         Row: {
@@ -192,6 +212,25 @@ export interface Database {
           name: string;
           color?: string;
           auto_generated?: boolean;
+        };
+        Update: {
+          name?: string;
+          color?: string;
+        };
+      };
+      document_tags: {
+        Row: {
+          document_id: string;
+          tag_id: string;
+          created_at: string;
+        };
+        Insert: {
+          document_id: string;
+          tag_id: string;
+        };
+        Update: {
+          document_id?: string;
+          tag_id?: string;
         };
       };
       insights: {
@@ -245,6 +284,11 @@ export interface Database {
           auto_generated?: boolean;
           query?: Json | null;
         };
+        Update: {
+          name?: string;
+          description?: string | null;
+          query?: Json | null;
+        };
       };
       audit_logs: {
         Row: {
@@ -258,6 +302,20 @@ export interface Database {
           ip_address: string | null;
           user_agent: string | null;
           created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          workspace_id?: string | null;
+          action: string;
+          resource_type: string;
+          resource_id?: string | null;
+          metadata?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          metadata?: Json;
         };
       };
     };
