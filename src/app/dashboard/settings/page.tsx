@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { User, Workspace as WorkspaceIcon, Bell, Shield } from 'lucide-react';
+import { User, Briefcase, Bell, Shield } from 'lucide-react';
 
 export default async function SettingsPage() {
   const profile = await requireProfile();
@@ -72,7 +72,7 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center space-x-2">
-                <WorkspaceIcon className="h-5 w-5" />
+                <Briefcase className="h-5 w-5" />
                 <CardTitle>Workspace Settings</CardTitle>
               </div>
               <CardDescription>
