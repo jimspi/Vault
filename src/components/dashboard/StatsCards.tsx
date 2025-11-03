@@ -14,6 +14,7 @@ interface StatsCardsProps {
 }
 
 export default function StatsCards({
+  workspaceId: _workspaceId,
   documentCount,
   processingCount,
   healthScore,
