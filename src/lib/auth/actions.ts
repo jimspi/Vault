@@ -18,51 +18,66 @@ const signInSchema = z.object({
 export async function signUp(formData: FormData) {
   const supabase = createClient();
 
-  const validatedData = signUpSchema.parse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-    fullName: formData.get('fullName'),
-  });
+  try {
+    const validatedData = signUpSchema.parse({
+      email: formData.get('email'),
+      password: formData.get('password'),
+      fullName: formData.get('fullName'),
+    });
 
-  const { data, error } = await supabase.auth.signUp({
-    email: validatedData.email,
-    password: validatedData.password,
-    options: {
-      data: {
-        full_name: validatedData.fullName,
+    const { data, error } = await supabase.auth.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
+      options: {
+        data: {
+          full_name: validatedData.fullName,
+        },
       },
-    },
-  });
+    });
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.session) {
+      redirect('/dashboard');
+    }
+
+    // Email confirmation required
+    redirect('/login?message=Check your email to confirm your account');
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      redirect('/signup?error=' + encodeURIComponent(error.errors[0].message));
+    }
+    redirect('/signup?error=' + encodeURIComponent(error instanceof Error ? error.message : 'An error occurred'));
   }
-
-  if (data.session) {
-    redirect('/dashboard');
-  }
-
-  return { success: true, message: 'Check your email to confirm your account' };
 }
 
 export async function signIn(formData: FormData) {
   const supabase = createClient();
 
-  const validatedData = signInSchema.parse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  });
+  try {
+    const validatedData = signInSchema.parse({
+      email: formData.get('email'),
+      password: formData.get('password'),
+    });
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: validatedData.email,
-    password: validatedData.password,
-  });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: validatedData.email,
+      password: validatedData.password,
+    });
 
-  if (error) {
-    return { error: error.message };
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    redirect('/dashboard');
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      redirect('/login?error=' + encodeURIComponent(error.errors[0].message));
+    }
+    redirect('/login?error=' + encodeURIComponent(error instanceof Error ? error.message : 'Invalid credentials'));
   }
-
-  redirect('/dashboard');
 }
 
 export async function signOut() {
@@ -76,7 +91,7 @@ export async function resetPassword(formData: FormData) {
   const email = formData.get('email') as string;
 
   if (!email) {
-    return { error: 'Email is required' };
+    redirect('/forgot-password?error=' + encodeURIComponent('Email is required'));
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -84,10 +99,10 @@ export async function resetPassword(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    redirect('/forgot-password?error=' + encodeURIComponent(error.message));
   }
 
-  return { success: true, message: 'Check your email for password reset link' };
+  redirect('/login?message=' + encodeURIComponent('Check your email for password reset link'));
 }
 
 export async function updatePassword(formData: FormData) {
@@ -95,7 +110,7 @@ export async function updatePassword(formData: FormData) {
   const password = formData.get('password') as string;
 
   if (!password || password.length < 8) {
-    return { error: 'Password must be at least 8 characters' };
+    redirect('/auth/reset-password?error=' + encodeURIComponent('Password must be at least 8 characters'));
   }
 
   const { error } = await supabase.auth.updateUser({
@@ -103,7 +118,7 @@ export async function updatePassword(formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message };
+    redirect('/auth/reset-password?error=' + encodeURIComponent(error.message));
   }
 
   redirect('/dashboard');
