@@ -4,25 +4,85 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FileText, Trash2, Search, Calendar } from 'lucide-react';
+import { FileText, Trash2, Search, Calendar, Sparkles } from 'lucide-react';
 import { formatBytes, formatRelativeTime } from '@/lib/utils';
 import { Document } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface DocumentsViewProps {
   workspaceId: string;
   initialDocuments: Document[];
 }
 
-export default function DocumentsView({ workspaceId: _workspaceId, initialDocuments }: DocumentsViewProps) {
+export default function DocumentsView({ workspaceId, initialDocuments }: DocumentsViewProps) {
   const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [searchQuery, setSearchQuery] = useState('');
+  const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const filteredDocuments = documents.filter((doc) =>
     doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doc.file_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleGenerateInsights = async () => {
+    if (documents.length === 0) {
+      toast({
+        title: 'No Documents',
+        description: 'Upload at least one document to generate AI insights.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setGenerating(true);
+
+    try {
+      const response = await fetch('/api/insights/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast({
+            title: 'Daily Limit Reached',
+            description: data.message || 'You have reached your daily limit for AI insight generation.',
+            variant: 'destructive',
+          });
+        } else if (response.status === 400) {
+          toast({
+            title: 'Cannot Generate Insights',
+            description: data.message || 'No documents available for analysis.',
+            variant: 'destructive',
+          });
+        } else {
+          throw new Error(data.error || 'Failed to generate insights');
+        }
+        setGenerating(false);
+        return;
+      }
+
+      setGenerating(false);
+      toast({
+        title: 'Insights Generated!',
+        description: `Created ${data.insights.length} new insights. Check the Insights tab to view them.`,
+      });
+      router.refresh();
+    } catch (error) {
+      setGenerating(false);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to generate insights',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleDelete = async (documentId: string) => {
     if (!confirm('Are you sure you want to delete this document?')) {
@@ -55,8 +115,8 @@ export default function DocumentsView({ workspaceId: _workspaceId, initialDocume
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search documents..."
@@ -65,6 +125,23 @@ export default function DocumentsView({ workspaceId: _workspaceId, initialDocume
             className="pl-10"
           />
         </div>
+        <Button
+          onClick={handleGenerateInsights}
+          disabled={generating || documents.length === 0}
+          className="whitespace-nowrap"
+        >
+          {generating ? (
+            <>
+              <Sparkles className="h-4 w-4 mr-2 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate AI Insights
+            </>
+          )}
+        </Button>
       </div>
 
       {filteredDocuments.length === 0 ? (
