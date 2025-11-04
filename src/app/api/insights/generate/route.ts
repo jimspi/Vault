@@ -171,7 +171,7 @@ Respond with a JSON array of insights in this exact format:
         // Map document titles to IDs
         const relatedDocIds = (insight.relatedDocumentTitles || [])
           .map((title: string) => titleToId.get(title))
-          .filter((id): id is string => id !== null && id !== undefined);
+          .filter((id: string | undefined): id is string => id !== null && id !== undefined);
 
         return {
           workspace_id: validatedData.workspaceId,
