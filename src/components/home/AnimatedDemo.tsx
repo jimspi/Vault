@@ -18,7 +18,7 @@ export default function AnimatedDemo() {
     let currentStep = 0;
     const timeouts: NodeJS.Timeout[] = [];
 
-    intervals.forEach((duration, index) => {
+    intervals.forEach((_duration, index) => {
       const timeout = setTimeout(() => {
         currentStep = index + 1;
         setStep(currentStep);
