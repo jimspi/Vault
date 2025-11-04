@@ -24,10 +24,10 @@ export default function DashboardClient({
   const router = useRouter();
 
   const handleGenerateInsights = async () => {
-    if (documentCount === 0) {
+    if (documentCount === 0 && !hasInsights) {
       toast({
-        title: 'No Documents',
-        description: 'Upload at least one document to generate AI insights.',
+        title: 'No Content to Analyze',
+        description: 'Upload documents or create manual insights first to generate AI insights.',
         variant: 'destructive',
       });
       return;
@@ -100,13 +100,13 @@ export default function DashboardClient({
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 {hasInsights
-                  ? 'Generate more AI-powered insights from your documents or create custom insights manually.'
-                  : 'Let AI analyze your documents to discover patterns, connections, and actionable insights.'}
+                  ? 'Let AI analyze your documents AND existing insights together to discover deeper patterns and connections.'
+                  : 'Let AI analyze your documents and manual insights to discover patterns, connections, and actionable recommendations.'}
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button
                   onClick={handleGenerateInsights}
-                  disabled={generating || documentCount === 0}
+                  disabled={generating || (documentCount === 0 && !hasInsights)}
                   size="lg"
                   className="bg-primary hover:bg-primary/90"
                 >
@@ -131,9 +131,9 @@ export default function DashboardClient({
                   Create Manual Insight
                 </Button>
               </div>
-              {documentCount === 0 && (
+              {documentCount === 0 && !hasInsights && (
                 <p className="text-xs text-muted-foreground mt-3">
-                  Upload documents first to enable AI insight generation
+                  Upload documents or create manual insights first to enable AI generation
                 </p>
               )}
             </div>

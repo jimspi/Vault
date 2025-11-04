@@ -28,10 +28,13 @@ export default function DocumentsView({ workspaceId, initialDocuments }: Documen
   );
 
   const handleGenerateInsights = async () => {
+    // Note: AI can work with just manual insights too, but in Documents tab,
+    // it makes sense to have documents. User can use main dashboard if they
+    // want to generate from insights alone.
     if (documents.length === 0) {
       toast({
-        title: 'No Documents',
-        description: 'Upload at least one document to generate AI insights.',
+        title: 'No Documents Yet',
+        description: 'Upload documents here, or go to the main dashboard to generate insights from manual insights only.',
         variant: 'destructive',
       });
       return;

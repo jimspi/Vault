@@ -72,54 +72,90 @@ export async function POST(request: NextRequest) {
       .order('upload_date', { ascending: false })
       .limit(20);
 
-    if (!documents || documents.length === 0) {
+    // Get existing insights to include in analysis (not just to avoid duplicates!)
+    const { data: existingInsights } = await supabase
+      .from('insights')
+      .select('id, type, title, content, created_at, metadata')
+      .eq('workspace_id', validatedData.workspaceId)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    // Check if we have any content to analyze
+    if ((!documents || documents.length === 0) && (!existingInsights || existingInsights.length === 0)) {
       return NextResponse.json(
-        { error: 'No documents available', message: 'Upload documents first to generate insights' },
+        { error: 'No content available', message: 'Upload documents or create manual insights first to generate AI insights' },
         { status: 400 }
       );
     }
 
-    // Get existing insights to avoid duplicates
-    const { data: existingInsights } = await supabase
-      .from('insights')
-      .select('title, content')
-      .eq('workspace_id', validatedData.workspaceId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    // Prepare context for AI
-    const documentSummaries = documents.map((doc) => ({
+    // Prepare document summaries for AI
+    const documentSummaries = (documents || []).map((doc) => ({
       title: doc.title,
       preview: doc.content?.slice(0, 500),
       uploadDate: doc.upload_date,
     }));
 
-    // Generate insights using AI
-    const prompt = `You are an expert analyst helping users discover valuable insights from their documents.
+    // Prepare existing insights for AI context
+    const insightSummaries = (existingInsights || []).map((insight) => ({
+      type: insight.type,
+      title: insight.title,
+      content: insight.content,
+      source: (insight.metadata as any)?.source || 'unknown',
+      createdAt: insight.created_at,
+    }));
 
-Documents in workspace (${documents.length} total):
-${documentSummaries.map((doc, i) => `${i + 1}. "${doc.title}" (${new Date(doc.uploadDate).toLocaleDateString()})\n   Preview: ${doc.preview}...`).join('\n\n')}
+    // Build comprehensive context for AI
+    let contextText = '';
 
-${existingInsights && existingInsights.length > 0 ? `\nExisting insights to avoid duplicating:\n${existingInsights.map((i) => `- ${i.title}`).join('\n')}` : ''}
+    if (documents && documents.length > 0) {
+      contextText += `Documents in workspace (${documents.length} total):\n`;
+      contextText += documentSummaries.map((doc, i) =>
+        `${i + 1}. "${doc.title}" (${new Date(doc.uploadDate).toLocaleDateString()})\n   Preview: ${doc.preview}...`
+      ).join('\n\n');
+      contextText += '\n\n';
+    }
 
-Generate 2-3 HIGH-VALUE insights that would genuinely help the user. Focus on:
-1. **Patterns**: Recurring themes, contradictions between documents, emerging trends
-2. **Actionable Suggestions**: Specific recommendations based on the content
-3. **Connections**: Non-obvious relationships between different documents
-4. **Knowledge Gaps**: Important topics that are missing or need more coverage
+    if (existingInsights && existingInsights.length > 0) {
+      contextText += `Existing Insights (${existingInsights.length} total - including manual insights from user):\n`;
+      contextText += insightSummaries.map((insight, i) =>
+        `${i + 1}. [${insight.type.toUpperCase()}] "${insight.title}"\n   Content: ${insight.content}\n   Source: ${insight.source === 'manual' ? '👤 Manual (user-created)' : '🤖 AI-generated'}`
+      ).join('\n\n');
+    }
 
-IMPORTANT:
-- Be SPECIFIC and reference actual document titles
-- Avoid generic advice like "consider organizing your documents"
-- Focus on insights the user couldn't easily see themselves
-- Each insight should provide real value
+    // Generate insights using AI with enhanced prompt
+    const prompt = `You are an expert analyst helping users discover valuable insights from their knowledge base.
+
+${contextText}
+
+Your task is to generate 2-3 NEW HIGH-VALUE insights by analyzing BOTH the documents AND the existing insights above.
+
+**IMPORTANT - Analyze Across All Content:**
+- Look for patterns that emerge across BOTH documents AND manual insights
+- Identify contradictions between documents and user's manual insights
+- Find connections between what's in documents and what the user has observed manually
+- Build upon existing insights to reach deeper conclusions
+- Consider how manual insights (marked 👤) provide context for understanding documents
+
+Focus on:
+1. **Meta-Patterns**: Connections between manual insights and document content
+2. **Validation**: Do documents support or contradict manual insights?
+3. **Synthesis**: Combine information from multiple sources into higher-level understanding
+4. **Gaps**: What's missing when you compare manual insights to document evidence?
+5. **Deeper Conclusions**: What can we infer by analyzing everything together?
+
+AVOID:
+- Simply restating existing insights (they're already captured)
+- Ignoring the manual insights - they're valuable user observations!
+- Generic advice that doesn't reference specific content
+
+Generate insights that show you've considered ALL available information - both documents and manual insights together.
 
 Respond with a JSON array of insights in this exact format:
 [
   {
     "type": "pattern" | "contradiction" | "suggestion" | "reminder" | "trend",
     "title": "Concise, specific title (max 100 chars)",
-    "content": "Detailed explanation with specific references to documents (200-500 chars)",
+    "content": "Detailed explanation referencing documents AND/OR existing insights (200-500 chars)",
     "priority": 1-100 (higher = more important),
     "relatedDocumentTitles": ["doc title 1", "doc title 2"]
   }
