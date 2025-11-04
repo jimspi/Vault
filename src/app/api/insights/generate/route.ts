@@ -154,28 +154,54 @@ Respond with a JSON array of insights in this exact format:
     // Create document title to ID mapping
     const titleToId = new Map(documents.map((doc) => [doc.title, doc.id]));
 
-    // Insert insights into database
-    const insightsToInsert = generatedInsights.map((insight: any) => {
-      // Map document titles to IDs
-      const relatedDocIds = (insight.relatedDocumentTitles || [])
-        .map((title: string) => titleToId.get(title))
-        .filter(Boolean);
+    // Valid insight types as defined in the database enum
+    const validTypes = ['pattern', 'contradiction', 'suggestion', 'reminder', 'trend'];
 
-      return {
-        workspace_id: validatedData.workspaceId,
-        type: insight.type,
-        title: insight.title.slice(0, 200),
-        content: insight.content.slice(0, 2000),
-        priority: Math.min(100, Math.max(1, insight.priority || 50)),
-        status: 'new',
-        metadata: {
-          source: 'ai_generated',
-          generated_at: new Date().toISOString(),
-          model: 'gpt-4',
+    // Insert insights into database
+    const insightsToInsert = generatedInsights
+      .filter((insight: any) => {
+        // Filter out insights with invalid types
+        if (!validTypes.includes(insight.type)) {
+          console.warn(`Skipping insight with invalid type: ${insight.type}`);
+          return false;
+        }
+        return true;
+      })
+      .map((insight: any) => {
+        // Map document titles to IDs
+        const relatedDocIds = (insight.relatedDocumentTitles || [])
+          .map((title: string) => titleToId.get(title))
+          .filter((id): id is string => id !== null && id !== undefined);
+
+        return {
+          workspace_id: validatedData.workspaceId,
+          type: insight.type,
+          title: insight.title?.slice(0, 200) || 'Untitled Insight',
+          content: insight.content?.slice(0, 2000) || '',
+          priority: Math.min(100, Math.max(1, insight.priority || 50)),
+          status: 'new',
+          metadata: {
+            source: 'ai_generated',
+            generated_at: new Date().toISOString(),
+            model: 'gpt-4',
+          },
+          related_documents: relatedDocIds,
+        };
+      });
+
+    // Check if we have any valid insights to insert
+    if (insightsToInsert.length === 0) {
+      console.error('No valid insights generated after filtering');
+      return NextResponse.json(
+        {
+          error: 'No valid insights generated',
+          message: 'AI generated insights, but they had invalid types. Please try again.'
         },
-        related_documents: relatedDocIds.length > 0 ? relatedDocIds : [],
-      };
-    });
+        { status: 500 }
+      );
+    }
+
+    console.log(`Attempting to insert ${insightsToInsert.length} insights`);
 
     const { data: createdInsights, error: insertError } = await supabase
       .from('insights')
@@ -183,9 +209,19 @@ Respond with a JSON array of insights in this exact format:
       .select();
 
     if (insertError) {
-      console.error('Error inserting insights:', insertError);
+      console.error('Error inserting insights:', {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint,
+        insightsData: insightsToInsert,
+      });
       return NextResponse.json(
-        { error: 'Failed to save insights' },
+        {
+          error: 'Failed to save insights',
+          details: insertError.message,
+          code: insertError.code,
+        },
         { status: 500 }
       );
     }
