@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Brain, FileText, Search, Sparkles, Network, Clock } from 'lucide-react';
+import AnimatedDemo from '@/components/home/AnimatedDemo';
 
 export default function HomePage() {
   return (
@@ -43,6 +44,17 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+        </section>
+
+        {/* Animated Demo Section */}
+        <section className="py-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">See How It Works</h2>
+            <p className="text-lg text-muted-foreground">
+              Watch Vault transform your documents into actionable insights
+            </p>
+          </div>
+          <AnimatedDemo />
         </section>
 
         {/* Features Section */}

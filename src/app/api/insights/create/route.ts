@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('Error creating insight:', insertError);
       return NextResponse.json(
-        { error: 'Failed to create insight' },
+        { error: 'Failed to create insight', details: insertError.message, code: insertError.code },
         { status: 500 }
       );
     }

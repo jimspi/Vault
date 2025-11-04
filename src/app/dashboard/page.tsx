@@ -32,12 +32,6 @@ export default async function DashboardPage() {
     .order('upload_date', { ascending: false })
     .limit(20);
 
-  const { count: processingCount } = await supabase
-    .from('documents')
-    .select('*', { count: 'exact', head: true })
-    .eq('workspace_id', workspace.id)
-    .eq('status', 'processing');
-
   const { data: insights } = await supabase
     .from('insights')
     .select('*')
@@ -58,9 +52,6 @@ export default async function DashboardPage() {
       <StatsCards
         workspaceId={workspace.id}
         documentCount={documentCount || 0}
-        processingCount={processingCount || 0}
-        healthScore={workspace.health_score}
-        totalSize={workspace.total_size_bytes}
       />
 
       <Tabs defaultValue="documents" className="space-y-4">
