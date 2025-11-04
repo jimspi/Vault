@@ -4,6 +4,7 @@ import DocumentsView from '@/components/dashboard/DocumentsView';
 import UploadZone from '@/components/dashboard/UploadZone';
 import StatsCards from '@/components/dashboard/StatsCards';
 import InsightsFeed from '@/components/dashboard/InsightsFeed';
+import DashboardClient from '@/components/dashboard/DashboardClient';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default async function DashboardPage() {
@@ -52,6 +53,12 @@ export default async function DashboardPage() {
       <StatsCards
         workspaceId={workspace.id}
         documentCount={documentCount || 0}
+      />
+
+      <DashboardClient
+        workspaceId={workspace.id}
+        documentCount={documentCount || 0}
+        hasInsights={(insights?.length || 0) > 0}
       />
 
       <Tabs defaultValue="documents" className="space-y-4">

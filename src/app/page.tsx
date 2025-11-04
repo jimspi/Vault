@@ -26,7 +26,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <main className="container mx-auto px-4">
-        <section className="py-20 text-center">
+        <section className="py-12 text-center">
           <div className="max-w-3xl mx-auto space-y-6">
             <h1 className="text-5xl font-bold tracking-tight">
               Your AI-Powered
@@ -36,7 +36,7 @@ export default function HomePage() {
               Store, analyze, and surface insights from all your content. Vault uses advanced AI
               to help you remember everything, understand patterns, and discover connections.
             </p>
-            <div className="flex justify-center">
+            <div className="flex justify-center space-x-4">
               <Link href="/signup">
                 <Button size="lg">
                   Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
@@ -46,9 +46,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Animated Demo Section */}
-        <section className="py-16">
-          <div className="text-center mb-12">
+        {/* Animated Demo Section - Moved up for visibility */}
+        <section className="py-8 pb-16">
+          <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-4">See How It Works</h2>
             <p className="text-lg text-muted-foreground">
               Watch Vault transform your documents into actionable insights
