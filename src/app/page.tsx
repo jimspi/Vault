@@ -26,17 +26,17 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <main className="container mx-auto px-4">
-        <section className="py-12 text-center">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h1 className="text-5xl font-bold tracking-tight">
+        <section className="py-6 text-center">
+          <div className="max-w-3xl mx-auto space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
               Your AI-Powered
               <span className="text-primary"> Continual Memory</span>
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-base md:text-lg text-muted-foreground">
               Store, analyze, and surface insights from all your content. Vault uses advanced AI
               to help you remember everything, understand patterns, and discover connections.
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center pt-2">
               <Link href="/signup">
                 <Button size="lg">
                   Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
@@ -46,11 +46,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Animated Demo Section - Moved up for visibility */}
-        <section className="py-8 pb-16">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4">See How It Works</h2>
-            <p className="text-lg text-muted-foreground">
+        {/* Animated Demo Section - Prominent and visible */}
+        <section className="py-4 pb-12">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">See How It Works</h2>
+            <p className="text-sm md:text-base text-muted-foreground">
               Watch Vault transform your documents into actionable insights
             </p>
           </div>

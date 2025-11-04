@@ -36,27 +36,27 @@ export default function AnimatedDemo() {
   }, [step === 0]); // Re-run when animation resets
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
+    <div className="relative w-full max-w-3xl mx-auto">
       {/* Main animation container */}
-      <div className="bg-gradient-to-br from-primary/5 via-background to-primary/10 rounded-2xl p-8 shadow-2xl border border-primary/20">
-        <div className="space-y-6">
+      <div className="bg-gradient-to-br from-primary/5 via-background to-primary/10 rounded-2xl p-4 md:p-6 shadow-2xl border border-primary/20">
+        <div className="space-y-4">
           {/* Step 1: Upload Document */}
           <div
             className={`transition-all duration-700 transform ${
               step >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
           >
-            <div className="bg-background rounded-xl p-6 shadow-lg border border-border hover:shadow-xl transition-shadow">
-              <div className="flex items-center space-x-4">
+            <div className="bg-background rounded-xl p-4 shadow-lg border border-border hover:shadow-xl transition-shadow">
+              <div className="flex items-center space-x-3">
                 <div
-                  className={`flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center transition-all duration-500 ${
+                  className={`flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center transition-all duration-500 ${
                     step >= 2 ? 'bg-green-500/20' : ''
                   }`}
                 >
                   {step >= 2 ? (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                   ) : (
-                    <Upload className={`h-6 w-6 text-primary ${step === 1 ? 'animate-bounce' : ''}`} />
+                    <Upload className={`h-5 w-5 text-primary ${step === 1 ? 'animate-bounce' : ''}`} />
                   )}
                 </div>
                 <div className="flex-1">
@@ -64,7 +64,7 @@ export default function AnimatedDemo() {
                     <FileText className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Research-Paper.pdf</span>
                   </div>
-                  <div className="mt-2">
+                  <div className="mt-1.5">
                     {step === 1 && (
                       <div className="h-2 bg-primary/20 rounded-full overflow-hidden">
                         <div className="h-full bg-primary rounded-full animate-progress w-full" />
@@ -97,10 +97,10 @@ export default function AnimatedDemo() {
                 step >= 3 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}
             >
-              <div className="bg-background rounded-xl p-6 shadow-lg border border-border hover:shadow-xl transition-shadow">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Lightbulb className="h-6 w-6 text-blue-500" />
+              <div className="bg-background rounded-xl p-4 shadow-lg border border-border hover:shadow-xl transition-shadow">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Lightbulb className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -109,7 +109,7 @@ export default function AnimatedDemo() {
                         Custom
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       Key findings from quarterly review meeting...
                     </p>
                   </div>
@@ -136,10 +136,10 @@ export default function AnimatedDemo() {
                 step >= 4 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}
             >
-              <div className="bg-gradient-to-r from-purple-500/10 to-primary/10 rounded-xl p-6 shadow-lg border border-purple-500/20 hover:shadow-xl transition-shadow">
-                <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-r from-purple-500/10 to-primary/10 rounded-xl p-4 shadow-lg border border-purple-500/20 hover:shadow-xl transition-shadow">
+                <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    <Sparkles className={`h-8 w-8 text-purple-500 ${step === 4 ? 'animate-pulse' : ''}`} />
+                    <Sparkles className={`h-6 w-6 text-purple-500 ${step === 4 ? 'animate-pulse' : ''}`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
@@ -149,7 +149,7 @@ export default function AnimatedDemo() {
                       {step >= 5 && <CheckCircle className="h-4 w-4 text-green-500" />}
                     </div>
                     {step === 4 && (
-                      <div className="mt-3 flex space-x-1">
+                      <div className="mt-2 flex space-x-1">
                         <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '0ms' }} />
                         <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '150ms' }} />
                         <div className="w-2 h-2 rounded-full bg-purple-500 animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -164,11 +164,11 @@ export default function AnimatedDemo() {
           {/* Step 4: AI Insights Results */}
           {step >= 5 && (
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-all duration-700 transform ${
+              className={`grid grid-cols-1 md:grid-cols-2 gap-3 transition-all duration-700 transform ${
                 step >= 5 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
               }`}
             >
-              <div className="bg-background rounded-lg p-4 shadow border border-border hover:shadow-lg transition-all hover:scale-105">
+              <div className="bg-background rounded-lg p-3 shadow border border-border hover:shadow-lg transition-all hover:scale-105">
                 <div className="flex items-start space-x-2">
                   <Sparkles className="h-4 w-4 text-primary mt-1 flex-shrink-0" />
                   <div>
@@ -179,7 +179,7 @@ export default function AnimatedDemo() {
                   </div>
                 </div>
               </div>
-              <div className="bg-background rounded-lg p-4 shadow border border-border hover:shadow-lg transition-all hover:scale-105">
+              <div className="bg-background rounded-lg p-3 shadow border border-border hover:shadow-lg transition-all hover:scale-105">
                 <div className="flex items-start space-x-2">
                   <Lightbulb className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
                   <div>
