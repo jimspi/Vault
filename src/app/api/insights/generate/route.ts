@@ -187,8 +187,8 @@ Respond with a JSON array of insights in this exact format:
       );
     }
 
-    // Create document title to ID mapping
-    const titleToId = new Map(documents.map((doc) => [doc.title, doc.id]));
+    // Create document title to ID mapping (handle case where no documents exist)
+    const titleToId = new Map((documents || []).map((doc) => [doc.title, doc.id]));
 
     // Valid insight types as defined in the database enum
     const validTypes = ['pattern', 'contradiction', 'suggestion', 'reminder', 'trend'];
