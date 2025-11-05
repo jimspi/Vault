@@ -8,11 +8,11 @@ export default function AnimatedDemo() {
 
   useEffect(() => {
     const intervals = [
-      2000, // Step 1: Show upload
-      2500, // Step 2: Document uploaded
-      2500, // Step 3: Custom insight
-      2500, // Step 4: AI generating
-      2500, // Step 5: Insights complete
+      800,  // Step 1: Show upload
+      1000, // Step 2: Document uploaded
+      1000, // Step 3: Custom insight
+      1000, // Step 4: AI generating
+      1000, // Step 5: Insights complete
     ];
 
     let currentStep = 0;
@@ -26,7 +26,7 @@ export default function AnimatedDemo() {
           // Reset animation
           setTimeout(() => {
             setStep(0);
-          }, 2000);
+          }, 800);
         }
       }, intervals.slice(0, index + 1).reduce((a, b) => a + b, 0));
       timeouts.push(timeout);
