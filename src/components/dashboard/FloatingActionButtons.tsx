@@ -92,9 +92,10 @@ export default function FloatingActionButtons({
           onClick={() => setShowCreateDialog(true)}
           size="lg"
           variant="secondary"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110"
+          className="rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 px-6 h-12"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className="h-5 w-5 mr-2" />
+          <span className="font-medium">Create Insight</span>
         </Button>
 
         {/* Primary FAB - Generate AI Insights */}
@@ -102,30 +103,25 @@ export default function FloatingActionButtons({
           onClick={handleGenerateInsights}
           disabled={generating || (documentCount === 0 && !hasInsights)}
           size="lg"
-          className="h-16 w-16 rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-110 bg-primary relative group"
+          className="rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 bg-primary relative px-6 h-14"
         >
           {generating ? (
-            <Loader2 className="h-7 w-7 animate-spin" />
+            <>
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              <span className="font-semibold">Generating...</span>
+            </>
           ) : (
             <>
-              <Sparkles className="h-7 w-7" />
+              <Sparkles className="h-5 w-5 mr-2" />
+              <span className="font-semibold">Generate AI Insights</span>
               {documentCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-background text-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-primary">
+                <span className="ml-2 bg-background text-foreground text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center border-2 border-primary">
                   {documentCount}
                 </span>
               )}
             </>
           )}
         </Button>
-
-        {/* Tooltip on hover */}
-        {!generating && (
-          <div className="absolute right-20 bottom-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap bg-foreground text-background px-3 py-2 rounded-md text-sm">
-            {documentCount > 0
-              ? `Analyze ${documentCount} document${documentCount === 1 ? '' : 's'}`
-              : 'Generate AI Insights'}
-          </div>
-        )}
       </div>
 
       {/* Dialogs and Overlays */}

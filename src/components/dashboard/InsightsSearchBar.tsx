@@ -63,13 +63,13 @@ export default function InsightsSearchBar({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Types</SelectItem>
-          <SelectItem value="pattern">🔄 Patterns</SelectItem>
-          <SelectItem value="contradiction">⚠️ Contradictions</SelectItem>
-          <SelectItem value="suggestion">💡 Suggestions</SelectItem>
-          <SelectItem value="trend">📈 Trends</SelectItem>
-          <SelectItem value="reminder">⏰ Reminders</SelectItem>
-          <SelectItem value="ai">🤖 AI Generated</SelectItem>
-          <SelectItem value="manual">👤 Manual</SelectItem>
+          <SelectItem value="pattern">Patterns</SelectItem>
+          <SelectItem value="contradiction">Contradictions</SelectItem>
+          <SelectItem value="suggestion">Suggestions</SelectItem>
+          <SelectItem value="trend">Trends</SelectItem>
+          <SelectItem value="reminder">Reminders</SelectItem>
+          <SelectItem value="ai">AI Generated</SelectItem>
+          <SelectItem value="manual">Manual</SelectItem>
         </SelectContent>
       </Select>
 

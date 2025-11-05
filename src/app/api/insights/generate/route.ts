@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     if (existingInsights && existingInsights.length > 0) {
       contextText += `Existing Insights (${existingInsights.length} total - including manual insights from user):\n`;
       contextText += insightSummaries.map((insight, i) =>
-        `${i + 1}. [${insight.type.toUpperCase()}] "${insight.title}"\n   Content: ${insight.content}\n   Source: ${insight.source === 'manual' ? '👤 Manual (user-created)' : '🤖 AI-generated'}`
+        `${i + 1}. [${insight.type.toUpperCase()}] "${insight.title}"\n   Content: ${insight.content}\n   Source: ${insight.source === 'manual' ? 'Manual (user-created)' : 'AI-generated'}`
       ).join('\n\n');
     }
 
@@ -134,7 +134,7 @@ Your task is to generate 2-3 NEW HIGH-VALUE insights by analyzing BOTH the docum
 - Identify contradictions between documents and user's manual insights
 - Find connections between what's in documents and what the user has observed manually
 - Build upon existing insights to reach deeper conclusions
-- Consider how manual insights (marked 👤) provide context for understanding documents
+- Consider how manual insights (marked "Manual") provide context for understanding documents
 
 Focus on:
 1. **Meta-Patterns**: Connections between manual insights and document content

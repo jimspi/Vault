@@ -226,13 +226,13 @@ export default function EnhancedInsightsFeed({
 
                       {isAI && (
                         <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
-                          🤖 AI Generated
+                          AI Generated
                         </Badge>
                       )}
 
                       {isManual && (
                         <Badge variant="outline">
-                          👤 Manual
+                          Manual
                         </Badge>
                       )}
                     </div>

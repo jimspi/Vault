@@ -116,14 +116,6 @@ function generateEmailHtml(
   docMap: Map<string, string>,
   userName: string
 ): string {
-  const insightTypeEmojis: Record<string, string> = {
-    pattern: '🔄',
-    contradiction: '⚠️',
-    suggestion: '💡',
-    reminder: '⏰',
-    trend: '📈',
-  };
-
   const insightsHtml = insights
     .map((insight) => {
       const relatedDocs = (insight.related_documents as string[]) || [];
@@ -133,11 +125,10 @@ function generateEmailHtml(
       return `
         <div style="margin-bottom: 32px; padding: 20px; background: #f9fafb; border-radius: 8px; border-left: 4px solid #6366f1;">
           <div style="display: flex; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 24px; margin-right: 8px;">${insightTypeEmojis[insight.type] || '💡'}</span>
             <span style="text-transform: uppercase; font-size: 12px; color: #6b7280; font-weight: 600;">
               ${insight.type}
             </span>
-            ${isAI ? '<span style="margin-left: 8px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 11px;">🤖 AI Generated</span>' : ''}
+            ${isAI ? '<span style="margin-left: 8px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 11px;">AI Generated</span>' : ''}
           </div>
 
           <h3 style="margin: 12px 0; font-size: 18px; color: #111827; font-weight: 600;">
@@ -151,7 +142,7 @@ function generateEmailHtml(
           ${docTitles.length > 0 ? `
             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
               <span style="font-size: 12px; color: #6b7280;">
-                📄 Based on: ${docTitles.join(', ')}
+                Based on: ${docTitles.join(', ')}
               </span>
             </div>
           ` : ''}
