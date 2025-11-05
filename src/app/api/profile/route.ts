@@ -35,6 +35,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
     }
 
+    // Check for cached profile (24-hour cache)
+    const { data: cachedProfile } = await supabase
+      .from('profile_cache')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .single();
+
+    if (cachedProfile) {
+      const cacheAge = Date.now() - new Date(cachedProfile.updated_at).getTime();
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      // Return cached profile if less than 24 hours old
+      if (cacheAge < twentyFourHours) {
+        return NextResponse.json({
+          ...cachedProfile.profile_data,
+          metadata: {
+            ...cachedProfile.profile_data.metadata,
+            cached: true,
+            cacheAge: Math.floor(cacheAge / 1000 / 60), // minutes
+            nextRefresh: new Date(new Date(cachedProfile.updated_at).getTime() + twentyFourHours).toISOString()
+          }
+        });
+      }
+    }
+
+    // Cache miss or expired - generate new profile
     // Get ALL documents
     const { data: documents } = await supabase
       .from('documents')
@@ -62,15 +88,34 @@ export async function GET(request: NextRequest) {
       .limit(10);
 
     if ((!documents || documents.length === 0) && (!manualInsights || manualInsights.length === 0)) {
-      return NextResponse.json({
+      const emptyProfile = {
         profile: {
           summary: "Start uploading documents and creating insights to help me understand your interests and goals.",
           interests: [],
           goals: [],
           patterns: [],
           characteristics: []
+        },
+        metadata: {
+          documentCount: 0,
+          manualInsightCount: 0,
+          lastUpdated: new Date().toISOString(),
+          cached: false,
         }
-      });
+      };
+
+      // Cache empty profile too (so we don't keep hitting AI with no data)
+      await supabase
+        .from('profile_cache')
+        .upsert({
+          workspace_id: workspaceId,
+          profile_data: emptyProfile,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'workspace_id'
+        });
+
+      return NextResponse.json(emptyProfile);
     }
 
     // Build context for AI analysis
@@ -165,8 +210,20 @@ Keep each item concise but specific. Reference actual topics from their content.
         documentCount: documents?.length || 0,
         manualInsightCount: manualInsights?.length || 0,
         lastUpdated: new Date().toISOString(),
+        cached: false,
       }
     };
+
+    // Save to cache (upsert)
+    await supabase
+      .from('profile_cache')
+      .upsert({
+        workspace_id: workspaceId,
+        profile_data: result,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'workspace_id'
+      });
 
     return NextResponse.json(result);
   } catch (error) {
