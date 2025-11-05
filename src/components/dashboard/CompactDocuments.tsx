@@ -11,12 +11,14 @@ interface CompactDocumentsProps {
   workspaceId: string;
   documents: Document[];
   onDocumentDeleted?: (documentId: string) => void;
+  highlightedDocId?: string | null;
 }
 
 export default function CompactDocuments({
   workspaceId: _workspaceId,
   documents,
-  onDocumentDeleted
+  onDocumentDeleted,
+  highlightedDocId
 }: CompactDocumentsProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
@@ -82,10 +84,12 @@ export default function CompactDocuments({
             </p>
           ) : (
             documents.map((doc) => (
-              <div key={doc.id}>
+              <div key={doc.id} id={`document-${doc.id}`}>
                 {/* Document Row */}
                 <div
-                  className="group flex items-center justify-between px-3 py-2 hover:bg-muted rounded-md cursor-pointer transition-colors"
+                  className={`group flex items-center justify-between px-3 py-2 hover:bg-muted rounded-md cursor-pointer transition-colors ${
+                    highlightedDocId === doc.id ? 'bg-primary/10 border-2 border-primary' : ''
+                  }`}
                   onClick={() => setExpandedDoc(expandedDoc === doc.id ? null : doc.id)}
                 >
                   <div className="flex-1 min-w-0">

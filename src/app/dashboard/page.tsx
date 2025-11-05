@@ -1,11 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireProfile } from '@/lib/auth/session';
-import DocumentsView from '@/components/dashboard/DocumentsView';
-import UploadZone from '@/components/dashboard/UploadZone';
-import StatsCards from '@/components/dashboard/StatsCards';
-import InsightsFeed from '@/components/dashboard/InsightsFeed';
-import DashboardClient from '@/components/dashboard/DashboardClient';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import DashboardLayout from '@/components/dashboard/DashboardLayout';
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
@@ -33,55 +28,21 @@ export default async function DashboardPage() {
     .order('upload_date', { ascending: false })
     .limit(20);
 
+  // Get ALL insights (not just status='new')
   const { data: insights } = await supabase
     .from('insights')
     .select('*')
     .eq('workspace_id', workspace.id)
-    .eq('status', 'new')
-    .order('created_at', { ascending: false })
-    .limit(5);
+    .order('created_at', { ascending: false });
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{workspace.name}</h1>
-        {workspace.description && (
-          <p className="text-muted-foreground">{workspace.description}</p>
-        )}
-      </div>
-
-      <StatsCards
-        workspaceId={workspace.id}
-        documentCount={documentCount || 0}
-      />
-
-      <DashboardClient
-        workspaceId={workspace.id}
-        documentCount={documentCount || 0}
-        hasInsights={(insights?.length || 0) > 0}
-      />
-
-      <Tabs defaultValue="documents" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="insights">
-            Insights {insights && insights.length > 0 && `(${insights.length})`}
-          </TabsTrigger>
-          <TabsTrigger value="upload">Upload</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="documents" className="space-y-4">
-          <DocumentsView workspaceId={workspace.id} initialDocuments={documents || []} />
-        </TabsContent>
-
-        <TabsContent value="insights" className="space-y-4">
-          <InsightsFeed workspaceId={workspace.id} initialInsights={insights || []} />
-        </TabsContent>
-
-        <TabsContent value="upload" className="space-y-4">
-          <UploadZone workspaceId={workspace.id} />
-        </TabsContent>
-      </Tabs>
-    </div>
+    <DashboardLayout
+      workspaceId={workspace.id}
+      workspaceName={workspace.name}
+      workspaceDescription={workspace.description}
+      insights={insights || []}
+      documents={documents || []}
+      documentCount={documentCount || 0}
+    />
   );
 }
