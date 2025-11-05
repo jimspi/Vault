@@ -69,7 +69,7 @@ export default function InsightsSearchBar({
           <SelectItem value="trend">Trends</SelectItem>
           <SelectItem value="reminder">Reminders</SelectItem>
           <SelectItem value="ai">AI Generated</SelectItem>
-          <SelectItem value="manual">Manual</SelectItem>
+          <SelectItem value="manual">Your Insights</SelectItem>
         </SelectContent>
       </Select>
 

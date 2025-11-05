@@ -196,7 +196,15 @@ export default function EnhancedInsightsFeed({
         return (
           <Card
             key={insight.id}
-            className={`transition-all ${isSelected ? 'ring-2 ring-primary' : ''} ${isDeleting ? 'opacity-50' : ''}`}
+            className={`transition-all ${
+              isSelected ? 'ring-2 ring-primary' : ''
+            } ${
+              isDeleting ? 'opacity-50' : ''
+            } ${
+              isAI
+                ? 'border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-950/10'
+                : 'border-l-4 border-l-green-500 bg-green-50/30 dark:bg-green-950/10'
+            }`}
           >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-4">
@@ -211,7 +219,9 @@ export default function EnhancedInsightsFeed({
                   )}
 
                   {/* Icon */}
-                  <Icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <Icon className={`h-5 w-5 flex-shrink-0 mt-0.5 ${
+                    isAI ? 'text-blue-600' : 'text-green-600'
+                  }`} />
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
@@ -225,14 +235,16 @@ export default function EnhancedInsightsFeed({
                       </Badge>
 
                       {isAI && (
-                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
+                        <Badge className="bg-blue-600 text-white hover:bg-blue-700 border-0">
+                          <Sparkles className="h-3 w-3 mr-1" />
                           AI Generated
                         </Badge>
                       )}
 
                       {isManual && (
-                        <Badge variant="outline">
-                          Manual
+                        <Badge className="bg-green-600 text-white hover:bg-green-700 border-0">
+                          <Lightbulb className="h-3 w-3 mr-1" />
+                          Your Insight
                         </Badge>
                       )}
                     </div>
