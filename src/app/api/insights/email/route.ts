@@ -78,20 +78,28 @@ export async function POST(request: NextRequest) {
     const emailHtml = generateEmailHtml(insights, docMap, profile.full_name || 'there');
 
     // TODO: Integrate with email service (Resend, SendGrid, etc.)
-    // For now, return success with email preview
-    console.log('Email would be sent to:', recipientEmail);
+    // Email functionality is not yet configured
+    console.log('Email service not configured. Would send to:', recipientEmail);
     console.log('Email HTML preview:', emailHtml.substring(0, 200) + '...');
 
-    // In production, you would do:
-    // await sendEmail({
+    // To enable email sending:
+    // 1. Install: npm install resend
+    // 2. Add RESEND_API_KEY to environment variables
+    // 3. Uncomment and configure the code below:
+    //
+    // import { Resend } from 'resend';
+    // const resend = new Resend(process.env.RESEND_API_KEY);
+    // await resend.emails.send({
+    //   from: 'Vault <insights@yourdomain.com>',
     //   to: recipientEmail,
     //   subject: `Your Vault AI Insights - ${new Date().toLocaleDateString()}`,
     //   html: emailHtml,
     // });
 
     return NextResponse.json({
-      success: true,
-      message: `Insights emailed to ${recipientEmail}`,
+      success: false,
+      error: 'Email service not configured',
+      message: 'Email functionality requires setup. Please configure an email service (Resend recommended) to enable sending insights via email.',
       // For demo: include preview
       preview: process.env.NODE_ENV === 'development' ? emailHtml : undefined,
     });

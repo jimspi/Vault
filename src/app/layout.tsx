@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Vault - AI-Powered Continual Memory',
   description: 'Store, analyze, and surface insights from your content with intelligent AI',
   keywords: ['AI', 'memory', 'knowledge management', 'document analysis', 'Claude'],
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Brain, FileText, Search, Lightbulb, Settings, LogOut } from 'lucide-react';
+import { Brain, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Profile, Workspace } from '@/types';
@@ -17,9 +17,6 @@ export default function DashboardNav({ profile, workspaces: _workspaces }: Dashb
   const pathname = usePathname();
 
   const navItems = [
-    { href: '/dashboard', label: 'Documents', icon: FileText },
-    { href: '/dashboard/search', label: 'Search', icon: Search },
-    { href: '/dashboard/insights', label: 'Insights', icon: Lightbulb },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
 
