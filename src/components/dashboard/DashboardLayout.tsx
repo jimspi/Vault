@@ -7,6 +7,7 @@ import InsightsSearchBar from './InsightsSearchBar';
 import CompactDocuments from './CompactDocuments';
 import CompactUpload from './CompactUpload';
 import FloatingActionButtons from './FloatingActionButtons';
+import ProfileSummary from './ProfileSummary';
 import { Insight, Document } from '@/types';
 
 interface DashboardLayoutProps {
@@ -98,6 +99,9 @@ export default function DashboardLayout({
                 <p className="text-sm text-muted-foreground">{workspaceDescription}</p>
               )}
             </div>
+
+            {/* AI Profile Summary */}
+            <ProfileSummary workspaceId={workspaceId} />
 
             {/* Search and Filter Bar */}
             <InsightsSearchBar
