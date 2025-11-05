@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/auth/session';
 import { z } from 'zod';
+import { Resend } from 'resend';
 
 export const runtime = 'nodejs';
 
@@ -77,32 +78,50 @@ export async function POST(request: NextRequest) {
     // Format email content
     const emailHtml = generateEmailHtml(insights, docMap, profile.full_name || 'there');
 
-    // TODO: Integrate with email service (Resend, SendGrid, etc.)
-    // Email functionality is not yet configured
-    console.log('Email service not configured. Would send to:', recipientEmail);
-    console.log('Email HTML preview:', emailHtml.substring(0, 200) + '...');
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY not configured');
+      return NextResponse.json({
+        success: false,
+        error: 'Email service not configured',
+        message: 'Email functionality requires RESEND_API_KEY environment variable to be set.',
+      }, { status: 500 });
+    }
 
-    // To enable email sending:
-    // 1. Install: npm install resend
-    // 2. Add RESEND_API_KEY to environment variables
-    // 3. Uncomment and configure the code below:
-    //
-    // import { Resend } from 'resend';
-    // const resend = new Resend(process.env.RESEND_API_KEY);
-    // await resend.emails.send({
-    //   from: 'Vault <insights@yourdomain.com>',
-    //   to: recipientEmail,
-    //   subject: `Your Vault AI Insights - ${new Date().toLocaleDateString()}`,
-    //   html: emailHtml,
-    // });
+    // Send email using Resend
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
-    return NextResponse.json({
-      success: false,
-      error: 'Email service not configured',
-      message: 'Email functionality requires setup. Please configure an email service (Resend recommended) to enable sending insights via email.',
-      // For demo: include preview
-      preview: process.env.NODE_ENV === 'development' ? emailHtml : undefined,
-    });
+      const { data, error: sendError } = await resend.emails.send({
+        from: process.env.FROM_EMAIL || 'Vault <onboarding@resend.dev>',
+        to: recipientEmail,
+        subject: `Your Vault AI Insights - ${new Date().toLocaleDateString()}`,
+        html: emailHtml,
+      });
+
+      if (sendError) {
+        console.error('Resend error:', sendError);
+        return NextResponse.json({
+          success: false,
+          error: 'Failed to send email',
+          message: sendError.message || 'Could not send email',
+        }, { status: 500 });
+      }
+
+      console.log('Email sent successfully:', data);
+
+      return NextResponse.json({
+        success: true,
+        message: `Insights emailed to ${recipientEmail}`,
+      });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to send email',
+        message: emailError instanceof Error ? emailError.message : 'Could not send email',
+      }, { status: 500 });
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -172,7 +191,7 @@ function generateEmailHtml(
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 40px;">
           <h1 style="margin: 0; font-size: 28px; color: #111827; font-weight: 700;">
-            🧠 Your Vault Insights
+            Your Vault Insights
           </h1>
           <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">
             ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
