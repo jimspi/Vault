@@ -165,12 +165,23 @@ Your task is to generate 2-3 NEW HIGH-VALUE insights by analyzing ALL the docume
 3. **Cross-Document Connections**: How do different documents relate to each other?
 4. **Memory Integration**: How do manual insights provide context for understanding documents?
 5. **Actionable Synthesis**: What can the user do with this information?
+6. **Smart Recommendations**: Based on what the user has uploaded and their patterns, what tasks, follow-ups, or related topics would be valuable?
+7. **Proactive Reminders**: What deadlines, action items, or important points should the user be reminded of?
+8. **Related Suggestions**: Based on the user's interests shown in their documents and insights, what additional areas might they find valuable to explore?
+
+**Types of Insights to Generate:**
+- **pattern**: Recurring themes across multiple documents
+- **contradiction**: Conflicting information that needs resolution
+- **suggestion**: Actionable recommendations based on content analysis (e.g., "You may want to explore X based on your interest in Y")
+- **reminder**: Time-sensitive action items, deadlines, or follow-ups mentioned in documents
+- **trend**: Changes or developments over time in the user's knowledge base
 
 **AVOID:**
 - Analyzing only 1-2 documents (use everything provided!)
 - Simply restating existing insights
 - Generic advice without specific references
 - Ignoring the user's manual observations
+- Missing opportunities to suggest related topics or tasks
 
 **IMPORTANT**: In relatedDocumentTitles, include ALL document titles that contributed to this insight, not just one.
 

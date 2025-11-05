@@ -226,10 +226,19 @@ ${contextText}
 Generate 2-3 insights that:
 1. Summarize what was added or updated today
 2. Identify patterns across ALL documents and insights
-3. Suggest next steps or reminders based on the content
-4. Connect new information to existing knowledge
+3. Provide smart recommendations based on the user's interests and patterns
+4. Suggest next steps, tasks, or reminders based on the content
+5. Offer "you may like" suggestions for related topics to explore
+6. Connect new information to existing knowledge
 
-Focus on making these insights actionable and valuable for the user's daily workflow.
+**Types of Insights to Include:**
+- **suggestion**: "Based on your interest in X, you may want to explore Y" or actionable next steps
+- **reminder**: Deadlines, follow-ups, or action items mentioned in today's content
+- **pattern**: Recurring themes that emerged today or connect to historical content
+- **trend**: How today's content relates to or changes previous understanding
+- **contradiction**: Conflicting information that needs attention
+
+Focus on making these insights actionable and valuable for the user's daily workflow. Be proactive in suggesting tasks and related topics.
 
 Respond with a JSON array:
 [
