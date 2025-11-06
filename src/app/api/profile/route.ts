@@ -36,28 +36,35 @@ export async function GET(request: NextRequest) {
     }
 
     // Check for cached profile (24-hour cache)
-    const { data: cachedProfile } = await supabase
-      .from('profile_cache')
-      .select('*')
-      .eq('workspace_id', workspaceId)
-      .single();
+    // Wrap in try-catch in case table doesn't exist yet
+    try {
+      const { data: cachedProfile, error: cacheError } = await supabase
+        .from('profile_cache')
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .single();
 
-    if (cachedProfile) {
-      const cacheAge = Date.now() - new Date(cachedProfile.updated_at).getTime();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
+      if (!cacheError && cachedProfile) {
+        const cacheAge = Date.now() - new Date(cachedProfile.updated_at).getTime();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
 
-      // Return cached profile if less than 24 hours old
-      if (cacheAge < twentyFourHours) {
-        return NextResponse.json({
-          ...cachedProfile.profile_data,
-          metadata: {
-            ...cachedProfile.profile_data.metadata,
-            cached: true,
-            cacheAge: Math.floor(cacheAge / 1000 / 60), // minutes
-            nextRefresh: new Date(new Date(cachedProfile.updated_at).getTime() + twentyFourHours).toISOString()
-          }
-        });
+        // Return cached profile if less than 24 hours old
+        if (cacheAge < twentyFourHours) {
+          console.log(`[Profile] Returning cached profile for workspace ${workspaceId}, age: ${Math.floor(cacheAge / 1000 / 60)} minutes`);
+          return NextResponse.json({
+            ...cachedProfile.profile_data,
+            metadata: {
+              ...cachedProfile.profile_data.metadata,
+              cached: true,
+              cacheAge: Math.floor(cacheAge / 1000 / 60), // minutes
+              nextRefresh: new Date(new Date(cachedProfile.updated_at).getTime() + twentyFourHours).toISOString()
+            }
+          });
+        }
       }
+    } catch (cacheCheckError) {
+      // Cache table might not exist yet - continue to generate
+      console.log('[Profile] Cache check failed (table may not exist yet):', cacheCheckError);
     }
 
     // Cache miss or expired - generate new profile
@@ -105,15 +112,19 @@ export async function GET(request: NextRequest) {
       };
 
       // Cache empty profile too (so we don't keep hitting AI with no data)
-      await supabase
-        .from('profile_cache')
-        .upsert({
-          workspace_id: workspaceId,
-          profile_data: emptyProfile,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'workspace_id'
-        });
+      try {
+        await supabase
+          .from('profile_cache')
+          .upsert({
+            workspace_id: workspaceId,
+            profile_data: emptyProfile,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'workspace_id'
+          });
+      } catch (cacheSaveError) {
+        console.log('[Profile] Failed to save empty profile to cache:', cacheSaveError);
+      }
 
       return NextResponse.json(emptyProfile);
     }
@@ -215,15 +226,21 @@ Keep each item concise but specific. Reference actual topics from their content.
     };
 
     // Save to cache (upsert)
-    await supabase
-      .from('profile_cache')
-      .upsert({
-        workspace_id: workspaceId,
-        profile_data: result,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'workspace_id'
-      });
+    try {
+      console.log(`[Profile] Saving new profile to cache for workspace ${workspaceId}`);
+      await supabase
+        .from('profile_cache')
+        .upsert({
+          workspace_id: workspaceId,
+          profile_data: result,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'workspace_id'
+        });
+    } catch (cacheSaveError) {
+      console.log('[Profile] Failed to save profile to cache:', cacheSaveError);
+      // Continue anyway - profile will still be returned, just not cached
+    }
 
     return NextResponse.json(result);
   } catch (error) {

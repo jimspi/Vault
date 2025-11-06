@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Brain, Settings, LogOut } from 'lucide-react';
+import { Brain, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { Profile, Workspace } from '@/types';
 import { signOut } from '@/lib/auth/actions';
 
@@ -14,11 +12,7 @@ interface DashboardNavProps {
 }
 
 export default function DashboardNav({ profile, workspaces: _workspaces }: DashboardNavProps) {
-  const pathname = usePathname();
-
-  const navItems = [
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-  ];
+  // Settings moved to right sidebar in DashboardLayout
 
   return (
     <nav className="border-b bg-background">
@@ -29,25 +23,6 @@ export default function DashboardNav({ profile, workspaces: _workspaces }: Dashb
               <Brain className="h-6 w-6 text-primary" />
               <span className="text-xl font-bold">Vault</span>
             </Link>
-
-            <div className="hidden md:flex space-x-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <Button
-                      variant={isActive ? 'secondary' : 'ghost'}
-                      className={cn('flex items-center space-x-2')}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
           </div>
 
           <div className="flex items-center space-x-4">

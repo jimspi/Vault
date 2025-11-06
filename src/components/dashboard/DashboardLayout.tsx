@@ -2,12 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import EnhancedInsightsFeed from './EnhancedInsightsFeed';
 import InsightsSearchBar from './InsightsSearchBar';
 import CompactDocuments from './CompactDocuments';
 import CompactUpload from './CompactUpload';
 import FloatingActionButtons from './FloatingActionButtons';
 import ProfileSummary from './ProfileSummary';
+import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
 import { Insight, Document } from '@/types';
 
 interface DashboardLayoutProps {
@@ -89,29 +92,28 @@ export default function DashboardLayout({
     <div className="flex h-screen">
       {/* Main Content Area - Insights */}
       <div className="flex-1 overflow-y-auto">
-        {/* Top Bar */}
-        <div className="sticky top-0 bg-background z-30 border-b">
-          <div className="p-4 space-y-4">
-            {/* Workspace Header */}
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{workspaceName}</h1>
-              {workspaceDescription && (
-                <p className="text-sm text-muted-foreground">{workspaceDescription}</p>
-              )}
-            </div>
+        {/* Workspace Header */}
+        <div className="border-b bg-background p-4">
+          <h1 className="text-2xl font-bold tracking-tight">{workspaceName}</h1>
+          {workspaceDescription && (
+            <p className="text-sm text-muted-foreground">{workspaceDescription}</p>
+          )}
+        </div>
 
-            {/* AI Profile Summary */}
-            <ProfileSummary workspaceId={workspaceId} />
+        {/* AI Profile Summary - Not sticky, scrollable */}
+        <div className="p-4 border-b bg-background">
+          <ProfileSummary workspaceId={workspaceId} />
+        </div>
 
-            {/* Search and Filter Bar */}
-            <InsightsSearchBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              filterType={filterType}
-              onFilterChange={setFilterType}
-              resultCount={filteredInsights.length}
-            />
-          </div>
+        {/* Sticky Search Bar */}
+        <div className="sticky top-0 bg-background z-30 border-b p-4">
+          <InsightsSearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filterType={filterType}
+            onFilterChange={setFilterType}
+            resultCount={filteredInsights.length}
+          />
         </div>
 
         {/* Insights Feed */}
@@ -135,6 +137,14 @@ export default function DashboardLayout({
             onDocumentDeleted={handleDocumentDeleted}
             highlightedDocId={selectedDocumentId}
           />
+
+          {/* Settings Button */}
+          <Link href="/dashboard/settings" className="block">
+            <Button variant="outline" className="w-full" size="sm">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </Link>
         </div>
       </div>
 
