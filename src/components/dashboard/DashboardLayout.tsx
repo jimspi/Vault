@@ -9,8 +9,9 @@ import CompactDocuments from './CompactDocuments';
 import CompactUpload from './CompactUpload';
 import FloatingActionButtons from './FloatingActionButtons';
 import ProfileSummary from './ProfileSummary';
+import RecommendationsCTA from './RecommendationsCTA';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Target } from 'lucide-react';
 import { Insight, Document } from '@/types';
 
 interface DashboardLayoutProps {
@@ -20,6 +21,7 @@ interface DashboardLayoutProps {
   insights: Insight[];
   documents: Document[];
   documentCount: number;
+  hasRecommendations: boolean;
 }
 
 export default function DashboardLayout({
@@ -29,6 +31,7 @@ export default function DashboardLayout({
   insights,
   documents,
   documentCount,
+  hasRecommendations,
 }: DashboardLayoutProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -117,7 +120,15 @@ export default function DashboardLayout({
         </div>
 
         {/* Insights Feed */}
-        <div className="p-6">
+        <div className="p-6 space-y-6">
+          {/* Show CTA if user has insights but no recommendations */}
+          {insights.length > 0 && !hasRecommendations && (
+            <RecommendationsCTA
+              workspaceId={workspaceId}
+              hasRecommendations={hasRecommendations}
+            />
+          )}
+
           <EnhancedInsightsFeed
             workspaceId={workspaceId}
             insights={filteredInsights}
@@ -137,6 +148,16 @@ export default function DashboardLayout({
             onDocumentDeleted={handleDocumentDeleted}
             highlightedDocId={selectedDocumentId}
           />
+
+          {/* View Recommendations Button (if user has recommendations) */}
+          {hasRecommendations && (
+            <Link href="/dashboard/recommendations" className="block">
+              <Button variant="default" className="w-full" size="sm">
+                <Target className="h-4 w-4 mr-2" />
+                View Recommendations
+              </Button>
+            </Link>
+          )}
 
           {/* Settings Button */}
           <Link href="/dashboard/settings" className="block">

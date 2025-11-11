@@ -35,6 +35,12 @@ export default async function DashboardPage() {
     .eq('workspace_id', workspace.id)
     .order('created_at', { ascending: false });
 
+  // Check if user has any recommendations
+  const { count: recommendationsCount } = await supabase
+    .from('recommendations')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspace.id);
+
   return (
     <DashboardLayout
       workspaceId={workspace.id}
@@ -43,6 +49,7 @@ export default async function DashboardPage() {
       insights={insights || []}
       documents={documents || []}
       documentCount={documentCount || 0}
+      hasRecommendations={(recommendationsCount || 0) > 0}
     />
   );
 }
