@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Brain, FileText, Search, Sparkles, Network, Clock } from 'lucide-react';
+import { ArrowRight, Brain, FileText, Search, Sparkles, Target, Clock } from 'lucide-react';
 import AnimatedDemo from '@/components/home/AnimatedDemo';
 
 export default function HomePage() {
@@ -51,7 +51,7 @@ export default function HomePage() {
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold mb-2">See How It Works</h2>
             <p className="text-sm md:text-base text-muted-foreground">
-              Watch Vault transform your documents into actionable insights
+              Watch Vault transform your documents into actionable insights and recommendations
             </p>
           </div>
           <AnimatedDemo />
@@ -87,10 +87,10 @@ export default function HomePage() {
             </div>
 
             <div className="p-6 rounded-lg border bg-card">
-              <Network className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Knowledge Graph</h3>
+              <Target className="h-12 w-12 text-primary mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Actionable Recommendations</h3>
               <p className="text-muted-foreground">
-                Visualize relationships between documents and concepts in an interactive graph.
+                Get personalized, AI-powered recommendations with specific action steps and real resources tailored to your goals.
               </p>
             </div>
 
@@ -104,9 +104,9 @@ export default function HomePage() {
 
             <div className="p-6 rounded-lg border bg-card">
               <Brain className="h-12 w-12 text-primary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Smart Q&A</h3>
+              <h3 className="text-xl font-semibold mb-2">AI Profile Summary</h3>
               <p className="text-muted-foreground">
-                Ask questions and get answers with citations from your entire knowledge base.
+                See what your AI assistant has learned about your interests, goals, and patterns over time.
               </p>
             </div>
           </div>

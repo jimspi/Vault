@@ -1,18 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, Upload, Lightbulb, Sparkles, ArrowRight, CheckCircle } from 'lucide-react';
+import { FileText, Upload, Lightbulb, Sparkles, ArrowRight, CheckCircle, Target } from 'lucide-react';
 
 export default function AnimatedDemo() {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
     const intervals = [
-      800,  // Step 1: Show upload
-      1000, // Step 2: Document uploaded
-      1000, // Step 3: Custom insight
-      1000, // Step 4: AI generating
-      1000, // Step 5: Insights complete
+      400,  // Step 1: Show upload
+      500, // Step 2: Document uploaded
+      500, // Step 3: Custom insight
+      500, // Step 4: AI generating
+      600, // Step 5: Insights complete
+      600, // Step 6: Recommendations
     ];
 
     let currentStep = 0;
@@ -26,7 +27,7 @@ export default function AnimatedDemo() {
           // Reset animation
           setTimeout(() => {
             setStep(0);
-          }, 800);
+          }, 500);
         }
       }, intervals.slice(0, index + 1).reduce((a, b) => a + b, 0));
       timeouts.push(timeout);
@@ -187,6 +188,53 @@ export default function AnimatedDemo() {
                     <p className="text-xs text-muted-foreground mt-1">
                       Consider consolidating findings
                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Arrow */}
+          {step >= 5 && (
+            <div className="flex justify-center">
+              <ArrowRight
+                className={`h-6 w-6 text-primary transition-all duration-500 ${
+                  step >= 6 ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
+                }`}
+              />
+            </div>
+          )}
+
+          {/* Step 5: Actionable Recommendations */}
+          {step >= 6 && (
+            <div
+              className={`transition-all duration-700 transform ${
+                step >= 6 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+              }`}
+            >
+              <div className="bg-gradient-to-r from-green-500/10 to-primary/10 rounded-xl p-4 shadow-lg border border-green-500/20 hover:shadow-xl transition-shadow">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <Target className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-green-600">Actionable Recommendations</span>
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      3 personalized recommendations with action steps
+                    </p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center space-x-2 text-xs">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="text-muted-foreground">Network with industry peers</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-xs">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="text-muted-foreground">Schedule follow-up meeting</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
