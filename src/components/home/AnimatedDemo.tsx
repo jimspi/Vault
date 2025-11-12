@@ -24,10 +24,10 @@ export default function AnimatedDemo() {
         currentStep = index + 1;
         setStep(currentStep);
         if (currentStep >= intervals.length) {
-          // Reset animation
+          // Reset animation after 7 seconds
           setTimeout(() => {
             setStep(0);
-          }, 500);
+          }, 7000);
         }
       }, intervals.slice(0, index + 1).reduce((a, b) => a + b, 0));
       timeouts.push(timeout);
