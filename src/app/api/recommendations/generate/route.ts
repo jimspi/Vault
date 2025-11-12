@@ -172,18 +172,10 @@ Keep it focused on what would be MOST valuable and actionable right now.`;
 
     for (const topic of topics.slice(0, 5)) { // Limit to top 5 to avoid excessive API calls
       try {
-        console.log(`[Recommendations] Searching for: ${topic.search_query}`);
+        console.log(`[Recommendations] Generating recommendation for: ${topic.search_query}`);
 
-        // Use WebSearch to find real resources
-        const searchPrompt = `Find relevant and actionable resources for: ${topic.search_query}
-
-Context: ${topic.needs}
-
-Return a summary of the most useful resources you find.`;
-
-        // Note: We'll use the WebSearch capability built into the system
-        // For now, let's generate recommendations with placeholder searches
-        // In production, this would use the actual WebSearch tool
+        // Note: In future, this could integrate with WebSearch to find real-time resources
+        // For now, AI generates recommendations based on its knowledge
 
         const recommendationPrompt = `Based on this user need:
 **Area**: ${topic.area}
