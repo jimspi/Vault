@@ -5,6 +5,7 @@ import { Brain, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Profile, Workspace } from '@/types';
 import { signOut } from '@/lib/auth/actions';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface DashboardNavProps {
   profile: Profile;
@@ -29,6 +30,7 @@ export default function DashboardNav({ profile, workspaces: _workspaces }: Dashb
             <div className="text-sm text-muted-foreground">
               {profile.full_name || profile.email}
             </div>
+            <NotificationBell />
             <form action={signOut}>
               <Button variant="ghost" size="sm" type="submit">
                 <LogOut className="h-4 w-4 mr-2" />
