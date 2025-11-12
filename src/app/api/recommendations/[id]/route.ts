@@ -77,7 +77,7 @@ export async function PATCH(
 
 // DELETE - Delete a recommendation
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
