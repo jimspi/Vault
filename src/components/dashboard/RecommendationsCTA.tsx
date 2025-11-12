@@ -34,15 +34,27 @@ export default function RecommendationsCTA({ workspaceId, hasRecommendations }: 
       const data = await response.json();
 
       if (response.ok) {
-        toast({
-          title: 'Recommendations generated!',
-          description: `Created ${data.count} actionable recommendations based on your content`,
-        });
-        router.refresh();
+        if (data.count > 0) {
+          toast({
+            title: 'Recommendations generated!',
+            description: `Created ${data.count} actionable recommendations based on your content${data.errors ? `. ${data.errors.length} failed to save.` : ''}`,
+          });
+          router.refresh();
+        } else {
+          toast({
+            title: 'No recommendations created',
+            description: 'The AI was unable to generate recommendations. Please check server logs for details.',
+            variant: 'destructive',
+          });
+        }
       } else {
-        throw new Error(data.error || 'Failed to generate recommendations');
+        console.error('[RecommendationsCTA] Error response:', data);
+        const errorMessage = data.message || data.error || 'Failed to generate recommendations';
+        const details = data.details ? ` (${data.details})` : '';
+        throw new Error(errorMessage + details);
       }
     } catch (error) {
+      console.error('[RecommendationsCTA] Generation error:', error);
       toast({
         title: 'Generation failed',
         description: error instanceof Error ? error.message : 'Could not generate recommendations',

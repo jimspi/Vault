@@ -156,13 +156,32 @@ Keep it focused on what would be MOST valuable and actionable right now.`;
 
     let topics: any[] = [];
     try {
+      console.log('[Recommendations] Raw analysis response:', analysisResponse.slice(0, 500));
       const jsonMatch = analysisResponse.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
         topics = JSON.parse(jsonMatch[0]);
+        console.log('[Recommendations] Parsed topics:', JSON.stringify(topics, null, 2));
+      } else {
+        console.error('[Recommendations] No JSON array found in response');
+        console.error('[Recommendations] Full response:', analysisResponse);
       }
     } catch (parseError) {
-      console.error('[Recommendations] Failed to parse analysis:', analysisResponse);
-      return NextResponse.json({ error: 'Failed to analyze user needs' }, { status: 500 });
+      console.error('[Recommendations] Failed to parse analysis:', parseError);
+      console.error('[Recommendations] Raw response:', analysisResponse);
+      return NextResponse.json({
+        error: 'Failed to analyze user needs',
+        details: parseError instanceof Error ? parseError.message : 'Parse error',
+        response: analysisResponse.slice(0, 200)
+      }, { status: 500 });
+    }
+
+    if (topics.length === 0) {
+      console.error('[Recommendations] No topics identified from analysis');
+      return NextResponse.json({
+        error: 'No recommendation areas identified',
+        message: 'Could not identify areas for recommendations based on your content. Try adding more documents or insights.',
+        response: analysisResponse.slice(0, 200)
+      }, { status: 400 });
     }
 
     console.log('[Recommendations] Found', topics.length, 'recommendation areas');
@@ -214,17 +233,23 @@ Make it SPECIFIC and ACTIONABLE. Use real URLs when possible (Meetup.com, Eventb
         );
 
         try {
+          console.log(`[Recommendations] Raw recommendation response (first 300 chars):`, recResponse.slice(0, 300));
           const jsonMatch = recResponse.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const recommendation = JSON.parse(jsonMatch[0]);
+            console.log(`[Recommendations] Successfully parsed recommendation:`, recommendation.title);
             recommendations.push({
               ...recommendation,
               category: topic.category,
               priority: topic.priority,
             });
+          } else {
+            console.error('[Recommendations] No JSON object found in recommendation response');
+            console.error('[Recommendations] Full response:', recResponse);
           }
         } catch (parseError) {
-          console.error('[Recommendations] Failed to parse recommendation:', recResponse);
+          console.error('[Recommendations] Failed to parse recommendation:', parseError);
+          console.error('[Recommendations] Response was:', recResponse.slice(0, 500));
         }
       } catch (error) {
         console.error(`[Recommendations] Error generating recommendation for ${topic.area}:`, error);
@@ -233,35 +258,60 @@ Make it SPECIFIC and ACTIONABLE. Use real URLs when possible (Meetup.com, Eventb
 
     console.log('[Recommendations] Generated', recommendations.length, 'recommendations');
 
+    if (recommendations.length === 0) {
+      console.error('[Recommendations] No recommendations were successfully generated');
+      return NextResponse.json({
+        error: 'Failed to generate recommendations',
+        message: 'The AI was unable to create recommendations from your content. This may be a temporary issue - please try again.',
+        count: 0
+      }, { status: 500 });
+    }
+
     // Step 3: Save recommendations to database
     const savedRecommendations = [];
+    const errors = [];
 
     for (const rec of recommendations) {
-      const { data: saved } = await supabase
-        .from('recommendations')
-        .insert({
-          workspace_id: workspaceId,
-          title: rec.title,
-          description: rec.description,
-          category: rec.category,
-          action_items: rec.action_items,
-          resources: rec.resources,
-          reasoning: rec.reasoning,
-          priority: rec.priority,
-          status: 'new',
-        })
-        .select()
-        .single();
+      try {
+        const { data: saved, error: insertError } = await supabase
+          .from('recommendations')
+          .insert({
+            workspace_id: workspaceId,
+            title: rec.title,
+            description: rec.description,
+            category: rec.category,
+            action_items: rec.action_items,
+            resources: rec.resources,
+            reasoning: rec.reasoning,
+            priority: rec.priority,
+            status: 'new',
+          })
+          .select()
+          .single();
 
-      if (saved) {
-        savedRecommendations.push(saved);
+        if (insertError) {
+          console.error('[Recommendations] Database insert error:', insertError);
+          errors.push({ title: rec.title, error: insertError.message });
+        } else if (saved) {
+          savedRecommendations.push(saved);
+          console.log('[Recommendations] Saved:', saved.title);
+        }
+      } catch (saveError) {
+        console.error('[Recommendations] Failed to save recommendation:', saveError);
+        errors.push({ title: rec.title, error: saveError instanceof Error ? saveError.message : 'Unknown error' });
       }
+    }
+
+    console.log(`[Recommendations] Saved ${savedRecommendations.length} of ${recommendations.length} recommendations`);
+    if (errors.length > 0) {
+      console.error('[Recommendations] Save errors:', errors);
     }
 
     return NextResponse.json({
       success: true,
       recommendations: savedRecommendations,
       count: savedRecommendations.length,
+      errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
     console.error('[Recommendations] Generation error:', error);
