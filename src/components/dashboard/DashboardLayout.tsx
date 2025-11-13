@@ -140,7 +140,8 @@ export default function DashboardLayout({
 
       {/* Right Sidebar - Documents and Upload */}
       <div className="w-80 border-l bg-muted/20 overflow-y-auto">
-        <div className="p-4 space-y-4">
+        {/* Add bottom padding to prevent floating buttons from covering content */}
+        <div className="p-4 space-y-4 pb-32">
           <CompactUpload workspaceId={workspaceId} />
           <CompactDocuments
             workspaceId={workspaceId}
