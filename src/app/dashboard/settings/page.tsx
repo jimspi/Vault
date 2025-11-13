@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { User, Briefcase, Bell, Shield } from 'lucide-react';
+import { User, Briefcase, Shield } from 'lucide-react';
+import NotificationSettings from '@/components/settings/NotificationSettings';
 
 export default async function SettingsPage() {
   const profile = await requireProfile();
@@ -104,41 +105,7 @@ export default async function SettingsPage() {
         )}
 
         {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Bell className="h-5 w-5" />
-              <CardTitle>Notifications</CardTitle>
-            </div>
-            <CardDescription>
-              Manage how you receive updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">New Insights</p>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when new insights are discovered
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                Enable
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Processing Complete</p>
-                <p className="text-sm text-muted-foreground">
-                  Get notified when documents finish processing
-                </p>
-              </div>
-              <Button variant="outline" size="sm">
-                Enable
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <NotificationSettings />
 
         {/* Privacy & Security */}
         <Card>
