@@ -1,0 +1,24 @@
+# Vercel Ignore - Exclude from deployment
+
+# Documentation files (not needed for runtime)
+*.md
+!README.md
+
+# Demo content
+demo-content/
+
+# Development files
+.git/
+.github/
+.vscode/
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+
+# Documentation images
+docs/
+screenshots/
