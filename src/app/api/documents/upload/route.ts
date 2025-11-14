@@ -5,6 +5,7 @@ import { extractContent, isSupportedFileType, sanitizeFilename } from '@/lib/pro
 import { generateEmbedding } from '@/lib/embeddings';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {

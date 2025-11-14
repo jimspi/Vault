@@ -5,6 +5,7 @@ import { generateEmbedding } from '@/lib/embeddings';
 import { searchSchema } from '@/lib/validations';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {

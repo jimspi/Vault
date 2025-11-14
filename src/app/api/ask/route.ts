@@ -6,6 +6,7 @@ import { answerQuestion } from '@/lib/claude/client';
 import { askSchema } from '@/lib/validations';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {

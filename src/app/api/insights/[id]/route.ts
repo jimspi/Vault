@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/auth/session';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // DELETE - Delete an insight
 export async function DELETE(

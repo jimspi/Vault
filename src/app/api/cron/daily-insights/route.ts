@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { generateCompletion } from '@/lib/claude/client';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Required for API routes that use headers/cookies
 export const maxDuration = 300; // 5 minutes for batch processing
 
 // This cron job runs daily at 7pm MST (2am UTC)

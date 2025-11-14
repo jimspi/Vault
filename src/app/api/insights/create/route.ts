@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/session';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const createInsightSchema = z.object({
   workspaceId: z.string().uuid(),

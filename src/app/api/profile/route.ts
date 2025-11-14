@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/session';
 import { generateCompletion } from '@/lib/claude/client';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Required for API routes that use cookies/getUser
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {

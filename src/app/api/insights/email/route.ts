@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Resend } from 'resend';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const emailInsightsSchema = z.object({
   insightIds: z.array(z.string().uuid()),

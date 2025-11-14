@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/auth/session';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Required for API routes that use cookies/getUser
 
 // GET - Fetch recommendations for a workspace
 export async function GET(request: NextRequest) {

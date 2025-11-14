@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/session';
 import { generateCompletion } from '@/lib/claude/client';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for deep analysis + web searches
 
 interface ActionItem {

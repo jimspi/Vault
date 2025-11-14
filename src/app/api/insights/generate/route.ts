@@ -5,6 +5,7 @@ import { generateCompletion } from '@/lib/claude/client';
 import { z } from 'zod';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const generateInsightsSchema = z.object({

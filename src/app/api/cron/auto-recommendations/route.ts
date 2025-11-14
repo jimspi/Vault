@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Required for API routes that use headers/cookies
 export const maxDuration = 300; // 5 minutes for processing multiple users
 
 // This cron job runs 3 times daily (8am, 2pm, 8pm MST / 3pm, 9pm, 3am UTC)
