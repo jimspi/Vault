@@ -5,8 +5,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic'; // Required for API routes that use headers/cookies
 export const maxDuration = 300; // 5 minutes for processing multiple users
 
-// This cron job runs 3 times daily (8am, 2pm, 8pm MST / 3pm, 9pm, 3am UTC)
-// It generates auto-recommendations for users with recent activity
+// This cron job runs once daily at 8am MST (3pm UTC)
+// It generates personalized auto-recommendations for users with recent activity based on their interests and updates
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       try {
         results.processed++;
 
-        // Check if user had recommendations in last 7 hours (buffer for 8-hour schedule)
+        // Check if user had recommendations in last 23 hours (daily schedule with 1-hour buffer)
         const lastRecommendation = settings.last_auto_recommendation_at
           ? new Date(settings.last_auto_recommendation_at)
           : null;
@@ -62,11 +62,11 @@ export async function GET(request: NextRequest) {
           const hoursSinceLastRecommendation =
             (Date.now() - lastRecommendation.getTime()) / (1000 * 60 * 60);
 
-          if (hoursSinceLastRecommendation < 7) {
+          if (hoursSinceLastRecommendation < 23) {
             console.log(
               `[Auto-Recommendations] Skipping user ${settings.user_id} - last recommendation ${hoursSinceLastRecommendation.toFixed(
                 1
-              )} hours ago`
+              )} hours ago (daily limit)`
             );
             results.skipped++;
             continue;

@@ -6,8 +6,8 @@
     },
     {
       "path": "/api/cron/auto-recommendations",
-      "schedule": "0 3,15,21 * * *",
-      "comment": "Runs 3x daily: 8am, 2pm, 8pm MST (3am, 3pm, 9pm UTC)"
+      "schedule": "0 15 * * *",
+      "comment": "Runs daily at 8am MST (3pm UTC) - generates personalized recommendations based on user activity and updates"
     }
   ]
 }

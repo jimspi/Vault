@@ -142,22 +142,30 @@ export async function POST(request: NextRequest) {
 ${contextText}
 
 **Your Task:**
-1. Identify 3-5 key areas that are most important to this user based on their content
-2. For each area, determine what actionable recommendations would be most valuable
-3. Consider: goals, challenges, interests, patterns, and recent activity
+1. CAREFULLY analyze the user's INTERESTS and GOALS from their profile
+2. Identify 3-5 SPECIFIC areas by combining their interests (e.g., if they like "politics" AND "podcasts", create a recommendation for "political podcasts")
+3. Focus on their STATED interests and goals - be precise and on-point
+4. Prioritize recommendations that align with multiple interests or recent activity
+5. For each area, determine the MOST SPECIFIC and ACTIONABLE recommendation
+
+**Important:**
+- Match recommendations to their exact interests (e.g., "politics" → political content, "podcasts" → podcast recommendations)
+- Combine interests when relevant (e.g., "technology + entrepreneurship" → "tech startup resources")
+- Be specific about resource types: podcasts, books, articles, courses, events, tools, communities
 
 Respond with a JSON array of recommendation topics in this format:
 [
   {
-    "area": "brief area name",
+    "area": "specific area matching user interests (e.g., 'Political Podcasts', 'AI Learning Resources')",
     "category": "networking|learning|productivity|health|career|finance|personal",
     "priority": "low|medium|high|urgent",
-    "needs": "what the user needs in this area",
-    "search_query": "specific search query to find real resources for this need"
+    "needs": "what the user needs in this area based on their goals",
+    "search_query": "specific search query to find real resources",
+    "resource_type": "podcast|article|book|course|event|tool|community"
   }
 ]
 
-Keep it focused on what would be MOST valuable and actionable right now.`;
+Keep it focused on what would be MOST valuable and actionable based on their SPECIFIC interests right now.`;
 
     console.log('[Recommendations] Analyzing user needs...');
     const analysisResponse = await generateCompletion(
@@ -214,29 +222,43 @@ Keep it focused on what would be MOST valuable and actionable right now.`;
         const recommendationPrompt = `Based on this user need:
 **Area**: ${topic.area}
 **Category**: ${topic.category}
+**Resource Type**: ${topic.resource_type || 'various'}
 **Need**: ${topic.needs}
 
-Create a detailed, actionable recommendation with:
+Create a HIGHLY SPECIFIC, actionable recommendation with:
 1. Specific action items the user can take (with timeframes)
-2. Real resources they can use (articles, tools, events, courses, etc.)
+2. REAL, SPECIFIC resources with actual URLs that match their interests
 3. Clear reasoning for why this matters to them
+
+**CRITICAL INSTRUCTIONS FOR RESOURCES:**
+- For PODCASTS: Provide specific podcast names with links (Apple Podcasts, Spotify, or podcast website)
+  Example: "Pod Save America" → https://crooked.com/podcast-series/pod-save-america/
+- For ARTICLES: Provide specific article titles and publication URLs
+  Example: "The Atlantic - Politics Section" → https://www.theatlantic.com/politics/
+- For BOOKS: Provide book titles with Amazon, Goodreads, or publisher links
+- For COURSES: Provide actual course platforms (Coursera, Udemy, LinkedIn Learning) with course URLs
+- For EVENTS: Provide Meetup.com, Eventbrite, or specific event website links
+- For TOOLS: Provide actual tool websites (e.g., Notion.so, Obsidian.md)
+- For COMMUNITIES: Provide Reddit communities, Discord servers, or forum URLs
+
+**DO NOT use placeholder URLs like "example.com" - use REAL, WORKING URLs that the user can click on immediately.**
 
 Respond with JSON in this exact format:
 {
-  "title": "Clear, actionable title",
-  "description": "2-3 sentence description of what this recommendation is about",
+  "title": "Clear, actionable title that matches their specific interests",
+  "description": "2-3 sentence description of what this recommendation is about and why it's relevant to their interests",
   "action_items": [
     {"step": "Specific action to take", "timeframe": "this week|this month|next quarter"},
     {"step": "Another specific action", "timeframe": "timeframe"}
   ],
   "resources": [
-    {"title": "Resource name", "url": "https://example.com", "description": "What this resource provides"},
-    {"title": "Another resource", "url": "https://example.com", "description": "What this provides"}
+    {"title": "Specific resource name (e.g., 'Pod Save America podcast')", "url": "https://real-working-url.com", "description": "What this resource provides and why it matches their interests"},
+    {"title": "Another specific resource", "url": "https://another-real-url.com", "description": "What this provides"}
   ],
-  "reasoning": "Why this recommendation matters to the user based on their profile and content"
+  "reasoning": "Why this recommendation matters to the user based on their specific stated interests and goals"
 }
 
-Make it SPECIFIC and ACTIONABLE. Use real URLs when possible (Meetup.com, Eventbrite, LinkedIn Learning, etc.).`;
+Make it SPECIFIC, PRECISE, and ACTIONABLE with REAL URLs that match their exact interests.`;
 
         const recResponse = await generateCompletion(
           [{ role: 'user', content: recommendationPrompt }],
