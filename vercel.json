@@ -1,13 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/daily-insights",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/auto-recommendations",
-      "schedule": "0 15 * * *",
-      "comment": "Runs daily at 8am MST (3pm UTC) - generates personalized recommendations based on user activity and updates"
-    }
-  ]
-}
+{"crons":[{"path":"/api/cron/daily-insights","schedule":"0 2 * * *"},{"path":"/api/cron/auto-recommendations","schedule":"0 15 * * *"}]}
